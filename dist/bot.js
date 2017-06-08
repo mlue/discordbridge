@@ -144,23 +144,25 @@ class Bot {
       this.sendToIRC(message);
       var roll = Math.random() * 100;
       _winston2.default.info('rolled a '+roll);
-      if ( roll > 85){
+      if ( roll > 80){
         var msg = this.parseText(message);
         var msgs = _lodash.split(msg.replace(/(dicks?|pussy|penis|assholes?|butts?)/,
                                              'eggplant').replace(/(shits?|asse?s?)/,
-                                             'poop'),' ')
+                                                                 'poop'),' ');
         var scrambledkeys = _lodash.sortBy(_lodash.keys(this.emojis), function(){return Math.random()})
 
         var a = this.emojis[_lodash.find(msgs,
-                                   function(g){ return _lodash.find(scrambledkeys, function(x){return x == g})})]
+                                         function(g){ return _lodash.find(scrambledkeys, function(x){return x == g})})]
         if (a){
           _winston2.default.info('contextual from '+msg+' '+a);
-          message.react(a)
+          message.react(a);
         }
         else if((Math.random() * 100) > 75) {
-          var g = this.emojis[_lodash.keys(this.emojis)[Math.floor(Math.random() * _lodash.keys(this.emojis).length)]]
+          var len = _lodash.keys(this.emojis).length
+          var keys = _lodash.keys(this.emojis)
+          var g = this.emojis[keys[Math.floor(Math.random() * len)]]
           _winston2.default.info('random '+g);
-          message.react(g)
+          message.react(g);
         }
       }
     });
