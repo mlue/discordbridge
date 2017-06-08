@@ -156,7 +156,7 @@ class Bot {
           message.react(a)
         }
         else if((Math.random() * 100) > 90) {
-          var g = this.emoji[_lodash.keys(this.emoji)[Math.floor(Math.random() * _lodash.keys(this.emoji).length)]]
+          var g = this.emojis[_lodash.keys(this.emojis)[Math.floor(Math.random() * _lodash.keys(this.emojis).length)]]
           _winston2.default.info('random '+g);
           message.react(g)
         }
