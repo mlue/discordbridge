@@ -142,12 +142,14 @@ class Bot {
     this.discord.on('message', message => {
       // Ignore bot messages and people leaving/joining
       this.sendToIRC(message);
-
-      if ((Math.random() * 100) > 85){
+      var roll = Math.random() * 100;
+      _winston2.default.info('rolled a '+roll);
+      if ( roll > 85){
         var msg = this.parseText(message);
-        var msgs = _lodash.split(msg.replace(/(dicks?|pussy|penis|asse?s?|assholes?|butts?)/,
-                                             'eggplant'),' ')
-        const scrambledkeys = _lodash.sortBy(_lodash.keys(this.emojis), function(){return Math.random()})
+        var msgs = _lodash.split(msg.replace(/(dicks?|pussy|penis|assholes?|butts?)/,
+                                             'eggplant').replace(/(shits?|asse?s?)/,
+                                             'poop'),' ')
+        var scrambledkeys = _lodash.sortBy(_lodash.keys(this.emojis), function(){return Math.random()})
 
         var a = this.emojis[_lodash.find(msgs,
                                    function(g){ return _lodash.find(scrambledkeys, function(x){return x == g})})]
@@ -155,7 +157,7 @@ class Bot {
           _winston2.default.info('contextual from '+msg+' '+a);
           message.react(a)
         }
-        else if((Math.random() * 100) > 90) {
+        else if((Math.random() * 100) > 75) {
           var g = this.emojis[_lodash.keys(this.emojis)[Math.floor(Math.random() * _lodash.keys(this.emojis).length)]]
           _winston2.default.info('random '+g);
           message.react(g)
