@@ -1,0 +1,122 @@
+{
+  "_args": [
+    [
+      "discord-irc",
+      ""
+    ]
+  ],
+  "_from": "discord-irc@latest",
+  "_id": "discord-irc@2.3.3",
+  "_inCache": true,
+  "_installable": true,
+  "_location": "/discord-irc",
+  "_nodeVersion": "7.4.0",
+  "_npmOperationalInternal": {
+    "host": "packages-18-east.internal.npmjs.com",
+    "tmp": "tmp/discord-irc-2.3.3.tgz_1493518513181_0.4865896801929921"
+  },
+  "_npmUser": {
+    "email": "mail@ekmartin.com",
+    "name": "ekmartin"
+  },
+  "_npmVersion": "4.0.5",
+  "_phantomChildren": {},
+  "_requested": {
+    "name": "discord-irc",
+    "raw": "discord-irc",
+    "rawSpec": "",
+    "scope": null,
+    "spec": "latest",
+    "type": "tag"
+  },
+  "_requiredBy": [
+    "#USER"
+  ],
+  "_resolved": "https://registry.npmjs.org/discord-irc/-/discord-irc-2.3.3.tgz",
+  "_shasum": "d8e58bde5cb225def425ede7dc25997d06b344db",
+  "_shrinkwrap": null,
+  "_spec": "discord-irc",
+  "_where": "",
+  "author": {
+    "name": "Reactiflux"
+  },
+  "bin": {
+    "discord-irc": "dist/index.js"
+  },
+  "bugs": {
+    "url": "https://github.com/reactiflux/discord-irc/issues"
+  },
+  "dependencies": {
+    "pry": ">1.0.0",
+    "check-env": "1.2.0",
+    "commander": "2.9.0",
+    "discord.js": "11.0.0",
+    "irc": "0.5.2",
+    "irc-colors": "^1.3.2",
+    "irc-formatting": "^1.0.0-rc3",
+    "lodash": "^4.17.4",
+    "simple-markdown": "^0.2.1",
+    "strip-json-comments": "2.0.1",
+    "winston": "2.3.1"
+  },
+  "description": "Connects IRC and Discord channels by sending messages back and forth.",
+  "devDependencies": {
+    "babel-cli": "^6.6.5",
+    "babel-core": "^6.7.4",
+    "babel-eslint": "^7.0.0",
+    "babel-preset-node6": "^11.0.0",
+    "babel-preset-stage-0": "^6.5.0",
+    "chai": "^3.5.0",
+    "coveralls": "^2.11.14",
+    "eslint": "^3.13.1",
+    "eslint-config-airbnb-base": "^11.0.1",
+    "eslint-plugin-import": "^2.2.0",
+    "mocha": "^3.1.2",
+    "nyc": "^10.0.0",
+    "sinon": "^2.0.0",
+    "sinon-chai": "^2.8.0"
+  },
+  "directories": {},
+  "dist": {
+    "shasum": "d8e58bde5cb225def425ede7dc25997d06b344db",
+    "tarball": "https://registry.npmjs.org/discord-irc/-/discord-irc-2.3.3.tgz"
+  },
+  "engines": {
+    "node": ">=6.0.0"
+  },
+  "gitHead": "fe37ec48a4129ea215c74fac7e2dfe0b7a0353c3",
+  "homepage": "https://github.com/reactiflux/discord-irc#readme",
+  "keywords": [
+    "bot",
+    "discord",
+    "discord-irc",
+    "gateway",
+    "irc",
+    "reactiflux"
+  ],
+  "license": "MIT",
+  "main": "dist/index.js",
+  "maintainers": [
+    {
+      "name": "ekmartin",
+      "email": "mail@ekmartin.com"
+    }
+  ],
+  "name": "discord-irc",
+  "optionalDependencies": {},
+  "readme": "ERROR: No README data found!",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/reactiflux/discord-irc.git"
+  },
+  "scripts": {
+    "build": "babel lib --out-dir dist",
+    "coverage": "nyc --require babel-core/register _mocha -- $(find test -name '*.test.js')",
+    "lint": "eslint . --ignore-path .gitignore",
+    "prepublish": "npm run build",
+    "report": "nyc report --reporter=text-lcov | coveralls",
+    "start": "node dist/index.js",
+    "test": "npm run lint && npm run coverage"
+  },
+  "version": "2.3.3"
+}
