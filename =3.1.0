@@ -1,0 +1,4 @@
+/usr/local/bin/eslint -> /usr/local/lib/node_modules/eslint/bin/eslint.js
+/usr/local/lib
+└── eslint@3.19.0 
+

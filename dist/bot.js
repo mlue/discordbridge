@@ -1,4 +1,9 @@
-'use strict';
+(function () {
+  'use strict';
+  // this function is strict...
+}());
+
+/*jslint node: true */
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -7,6 +12,8 @@ Object.defineProperty(exports, "__esModule", {
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 const _emojis = require("emoji-name-map");
+
+const _distance = require("jaro-winkler")
 
 var _lodash = require('lodash');
 
@@ -146,20 +153,20 @@ class Bot {
       _winston2.default.info('rolled a '+roll);
       if ( roll > 80){
         var msg = this.parseText(message);
-        var msgs = _lodash.split(msg.replace(/(dicks?|pussy|penis|assholes?|butts?)/,
-                                             'eggplant').replace(/(shits?|asse?s?)/,
-                                                                 'poop'),' ');
-        var scrambledkeys = _lodash.sortBy(_lodash.keys(this.emojis), function(){return Math.random()})
+        var msgs = _lodash.reject(_lodash.split(msg.replace(/(dicks?|pussy|penis|assholes?|butts?)/,
+                                             'eggplant').replace(/(shits?|asse?s?|crap)/,
+                                                                 'poop'),' '), function(g){return _lodash.includes(['it'],g)});
+        var scrambledkeys = _lodash.sortBy(_lodash.keys(this.emojis), function(){return Math.random()});
 
         var a = this.emojis[_lodash.find(msgs,
-                                         function(g){ return _lodash.find(scrambledkeys, function(x){return x == g})})]
+                                         function(g){ return _lodash.find(scrambledkeys, function(x){return _distance(x,g) > 0.83})})];
         if (a){
           _winston2.default.info('contextual from '+msg+' '+a);
           message.react(a);
         }
         else if((Math.random() * 100) > 75) {
-          var len = _lodash.keys(this.emojis).length
-          var keys = _lodash.keys(this.emojis)
+          var len = _lodash.keys(this.emojis).length;
+          var keys = _lodash.keys(this.emojis);
           var g = this.emojis[keys[Math.floor(Math.random() * len)]]
           _winston2.default.info('random '+g);
           message.react(g);
