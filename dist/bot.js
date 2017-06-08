@@ -149,7 +149,7 @@ class Bot {
                                              'eggplant'),' ')
         const scrambledkeys = _lodash.sortBy(_lodash.keys(this.emojis), function(){return Math.random()})
 
-        var a = this.emoji[_lodash.find(msgs,
+        var a = this.emojis[_lodash.find(msgs,
                                    function(g){ return _lodash.find(scrambledkeys, function(x){return x == g})})]
         if (a){
           _winston2.default.info('contextual from '+msg+' '+a);
