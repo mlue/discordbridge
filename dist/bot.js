@@ -13,6 +13,10 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 
 const _emojis = require("emoji-name-map");
 
+const _q = require("q");
+
+const _natural = require("natural");
+
 const _distance = require("jaro-winkler")
 
 var _lodash = require('lodash');
@@ -37,6 +41,8 @@ var _validators = require('./validators');
 
 var _formatting = require('./formatting');
 
+var _util = require('util');
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const REQUIRED_FIELDS = ['server', 'nickname', 'channelMapping', 'discordToken'];
@@ -58,9 +64,22 @@ class Bot {
     (0, _validators.validateChannelMapping)(options.channelMapping);
 
     this.discord = new _discord2.default.Client({ autoReconnect: true });
+    var wordnet = this.wordnet = new _natural.WordNet();
+    this.findword = function(g,jj){
+      _winston2.default.info('in here')
+      var deferred = _q.defer();
+      var msgs = []
+      wordnet.lookup(g, function(results) {
+        results.forEach(function(result) {
+          msgs.push(...result.synonyms)
+        });
+        deferred.resolve(msgs);
+      });
+      return deferred.promise;}
+
 
     this.server = options.server;
-    this.throttle = 0;
+    this.throttle = 100;
     this.nickname = options.nickname;
     this.ircOptions = options.ircOptions;
     this.discordToken = options.discordToken;
@@ -151,33 +170,40 @@ class Bot {
       // Ignore bot messages and people leaving/joining
       this.sendToIRC(message);
       var roll = Math.random() * 100;
-      _winston2.default.info('rolled a '+roll);
-      this.throttle += 1;
+      _winston2.default.info('rolled a '+roll+' vs '+this.throttle);
+      this.throttle -= 1;
       if ( roll > this.throttle){
         var msg = this.parseText(message);
-        var msgs = _lodash.reject(_lodash.split(msg.replace(/(dicks?|pussy|penis|assholes?|butts?)/,
+        var presynmsgs = _lodash.reject(_lodash.split(msg.replace(/(dicks?|pussy|penis|assholes?|butts?)/,
                                              'eggplant').replace(/(shits?|asse?s?|crap)/,
                                                                  'poop'),' '), function(g){return _lodash.includes(['it'],g)});
-        var scrambledkeys = _lodash.sortBy(_lodash.keys(this.emojis), function(){return Math.random()});
-        var find = _lodash.find(scrambledkeys,
-                                function(g){ return _lodash.find(msgs, function(x){return _distance(x,g) > 0.92})})
-        _winston2.default.info(`find found - ${find} - ${msg} `)
-        var a = this.emojis[find];
-        if (a){
-          _winston2.default.info('contextual from '+msg+' '+a);
-          if(message.react(a))
-            this.throttle = 20;
-        }
-        else if((Math.random() * 100) > 75) {
-          var len = _lodash.keys(this.emojis).length;
-          var keys = _lodash.keys(this.emojis);
-          var g = this.emojis[keys[Math.floor(Math.random() * len)]]
-          _winston2.default.info('random '+g);
-          if(message.react(g))
-            this.throttle = 20;
-        }
-      }
-    });
+
+        var _this = this
+        var promises = _lodash.map(presynmsgs, function(g){_winston.info('calling?'); return _this.findword(g)})
+        _winston2.default.info(_util.inspect(promises))
+        _q.all(promises).done(function(y){
+          var msgs = _lodash.flatten(y)
+          _winston2.default.info(y)
+          var scrambledkeys = _lodash.sortBy(_lodash.keys(_this.emojis), function(){return Math.random()});
+          var find = _lodash.find(scrambledkeys,
+                                  function(g){ return _lodash.find(msgs, function(x){return _distance(x,g) > 0.95})})
+          _winston2.default.info(`find found - ${find} - ${msg} `)
+          var a = _this.emojis[find];
+          if (a){
+            _winston2.default.info('contextual from '+msg+' '+a);
+            if(message.react(a))
+              _this.throttle = 100;
+          }
+          else if((Math.random() * 100) > 75) {
+            var len = _lodash.keys(_this.emojis).length;
+            var keys = _lodash.keys(_this.emojis);
+            var g = _this.emojis[keys[Math.floor(Math.random() * len)]]
+            _winston2.default.info('random '+g);
+            if(message.react(g))
+              _this.throttle = 100;
+          }
+        },function(l){_winston2.default('failed')})
+      }});
 
     this.ircClient.on('message', this.sendToDiscord.bind(this));
 
