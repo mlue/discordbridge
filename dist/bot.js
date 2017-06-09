@@ -170,7 +170,7 @@ class Bot {
       this.sendToIRC(message);
       var roll = Math.random() * 100;
       _winston2.default.info('rolled a '+roll+' vs '+this.throttle);
-      this.throttle -= 1;
+      this.throttle -= 0.25;
       if ( roll > this.throttle){
         var msg = this.parseText(message);
         var presynmsgs = _lodash.reject(_lodash.split(msg.replace(/(dicks?|pussy|penis|assholes?|butts?)/,
@@ -185,7 +185,7 @@ class Bot {
           _winston2.default.info(msgs)
           var scrambledkeys = _lodash.sortBy(_lodash.keys(_this.emojis), function(){return Math.random()});
           var find = _lodash.find(scrambledkeys,
-                                  function(g){ return _lodash.find(msgs, function(x){return _distance(x,g) > 0.95})})
+                                  function(g){ return _lodash.find(msgs, function(x){return _distance(x,_lodash.lowercase(g)) > 0.95})})
           _winston2.default.info(`find found - ${find} - ${msg} `)
           var a = _this.emojis[find];
           if (a){
