@@ -11,7 +11,15 @@ Object.defineProperty(exports, "__esModule", {
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-const _emojis = require("emoji-name-map");
+var _emojis = [];
+
+var ekeys = require("emojis-keywords"),  evalues = require("emojis-list");
+
+for (var i = 0; i < ekeys.length; i++) {
+  //or check with: if (b.length > i) { assignment }
+  _emojis[ekeys[i]] = evalues[i]
+
+}
 
 const _q = require("q");
 
@@ -78,6 +86,7 @@ class Bot {
 
 
     this.server = options.server;
+    this.last_msg_time = new Date().getTime()/1000;
     this.throttle = 100;
     this.nickname = options.nickname;
     this.ircOptions = options.ircOptions;
@@ -87,7 +96,7 @@ class Bot {
     this.channels = _lodash2.default.values(options.channelMapping);
     this.ircStatusNotices = options.ircStatusNotices;
     this.announceSelfJoin = options.announceSelfJoin;
-    this.emojis = _emojis.emoji//['cake': '🍰', '🤷', '🍌','⌛', '💣', '🔋', '🎂', '🍂', '⚽','🤖']
+    this.emojis = _emojis//['cake': '🍰', '🤷', '🍌','⌛', '💣', '🔋', '🎂', '🍂', '⚽','🤖']
 
     this.format = options.format || {};
     // "{$keyName}" => "variableValue"
@@ -170,7 +179,8 @@ class Bot {
       this.sendToIRC(message);
       var roll = Math.random() * 100;
       _winston2.default.info('rolled a '+roll+' vs '+this.throttle);
-      this.throttle -= 0.25;
+      this.throttle -= (0.25 + ((new Date().getTime()/1000 - this.last_msg_time) * 133/115200));
+      this.last_msg_time = new Date().getTime()/1000;
       if ( roll > this.throttle){
         var msg = this.parseText(message);
         var presynmsgs = _lodash.reject(_lodash.split(msg.replace(/(dicks?|pussy|penis|assholes?|butts?)/,
@@ -185,7 +195,7 @@ class Bot {
           _winston2.default.info(msgs)
           var scrambledkeys = _lodash.sortBy(_lodash.keys(_this.emojis), function(){return Math.random()});
           var find = _lodash.find(scrambledkeys,
-                                  function(g){ return _lodash.find(msgs, function(x){return _distance(x,_lodash.lowercase(g)) > 0.95})})
+                                  function(g){ return _lodash.find(msgs, function(x){return _distance(x,_lodash.lowerCase(g)) > 0.95})})
           _winston2.default.info(`find found - ${find} - ${msg} `)
           var a = _this.emojis[find];
           if (a){
@@ -193,7 +203,7 @@ class Bot {
             if(message.react(a))
               _this.throttle = 100;
           }
-          else if((Math.random() * 100) > 75) {
+          else{
             var len = _lodash.keys(_this.emojis).length;
             var keys = _lodash.keys(_this.emojis);
             var g = _this.emojis[keys[Math.floor(Math.random() * len)]]
