@@ -66,8 +66,7 @@ class Bot {
     this.discord = new _discord2.default.Client({ autoReconnect: true });
     var wordnet = this.wordnet = new _natural.WordNet();
     this.findword = function(g,jj){
-      _winston2.default.info('in here')
-      var deferred = _q.defer();
+       var deferred = _q.defer();
       var msgs = []
       wordnet.lookup(g, function(results) {
         results.forEach(function(result) {
@@ -182,8 +181,8 @@ class Bot {
         var promises = _lodash.map(presynmsgs, function(g){_winston.info('calling?'); return _this.findword(g)})
         _winston2.default.info(_util.inspect(promises))
         _q.all(promises).done(function(y){
-          var msgs = _lodash.flatten(y)
-          _winston2.default.info(y)
+          var msgs = _lodash.uniq(_lodash.flatten(y))
+          _winston2.default.info(msgs)
           var scrambledkeys = _lodash.sortBy(_lodash.keys(_this.emojis), function(){return Math.random()});
           var find = _lodash.find(scrambledkeys,
                                   function(g){ return _lodash.find(msgs, function(x){return _distance(x,g) > 0.95})})
