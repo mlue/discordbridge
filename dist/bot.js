@@ -60,6 +60,7 @@ class Bot {
     this.discord = new _discord2.default.Client({ autoReconnect: true });
 
     this.server = options.server;
+    this.throttle = 0;
     this.nickname = options.nickname;
     this.ircOptions = options.ircOptions;
     this.discordToken = options.discordToken;
@@ -151,25 +152,29 @@ class Bot {
       this.sendToIRC(message);
       var roll = Math.random() * 100;
       _winston2.default.info('rolled a '+roll);
-      if ( roll > 80){
+      this.throttle += 1;
+      if ( roll > this.throttle){
         var msg = this.parseText(message);
         var msgs = _lodash.reject(_lodash.split(msg.replace(/(dicks?|pussy|penis|assholes?|butts?)/,
                                              'eggplant').replace(/(shits?|asse?s?|crap)/,
                                                                  'poop'),' '), function(g){return _lodash.includes(['it'],g)});
         var scrambledkeys = _lodash.sortBy(_lodash.keys(this.emojis), function(){return Math.random()});
-
-        var a = this.emojis[_lodash.find(msgs,
-                                         function(g){ return _lodash.find(scrambledkeys, function(x){return _distance(x,g) > 0.83})})];
+        var find = _lodash.find(scrambledkeys,
+                                function(g){ return _lodash.find(msgs, function(x){return _distance(x,g) > 0.92})})
+        _winston2.default.info(`find found - ${find} - ${msg} `)
+        var a = this.emojis[find];
         if (a){
           _winston2.default.info('contextual from '+msg+' '+a);
-          message.react(a);
+          if(message.react(a))
+            this.throttle = 20;
         }
         else if((Math.random() * 100) > 75) {
           var len = _lodash.keys(this.emojis).length;
           var keys = _lodash.keys(this.emojis);
           var g = this.emojis[keys[Math.floor(Math.random() * len)]]
           _winston2.default.info('random '+g);
-          message.react(g);
+          if(message.react(g))
+            this.throttle = 20;
         }
       }
     });
