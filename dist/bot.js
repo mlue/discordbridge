@@ -11,15 +11,23 @@ Object.defineProperty(exports, "__esModule", {
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-var _emojis = [];
+var _emojis = {};
 
 var ekeys = require("emojis-keywords"),  evalues = require("emojis-list");
+
+var redis = require('redis')
+
+var _client = redis.createClient();
+
+const _emojis_old = require("emoji-name-map");
 
 for (var i = 0; i < ekeys.length; i++) {
   //or check with: if (b.length > i) { assignment }
   _emojis[ekeys[i]] = evalues[i]
 
 }
+
+pry = require('pryjs')
 
 const _q = require("q");
 
@@ -51,7 +59,37 @@ var _formatting = require('./formatting');
 
 var _util = require('util');
 
+var _sentiment = require('sentiment');
+
+const positive_responses = ['+1', 'smiley']
+
+const negative_responses = ['-1','angry']
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var myCustomLevels = {
+  levels: {
+    brain: 0,
+  },
+  colors: {
+    brain: 'yellow',
+  }
+
+};
+
+var _w = new (_winston.Logger)({ levels: myCustomLevels.levels });
+_winston.addColors(myCustomLevels.colors)
+function responder(m,a,obj){
+  m.react(a);
+  obj.throttle = 100;
+}
+
+function saveFact(msg, emoji){
+  if(/([^\s]+) is (?: same)(?: as)(?: like)([^\s].+)/.exec(msg)){
+    _w.brain(`adding ${RegExp.$1} ${RegExp.$2} ${emoji}`);
+    _client.sadd("emoji-fact-brain:"+RegExp.$1, RegExp.$2, emoji);
+  }
+}
 
 const REQUIRED_FIELDS = ['server', 'nickname', 'channelMapping', 'discordToken'];
 const NICK_COLORS = ['light_blue', 'dark_blue', 'light_red', 'dark_red', 'light_green', 'dark_green', 'magenta', 'light_magenta', 'orange', 'yellow', 'cyan', 'light_cyan'];
@@ -73,6 +111,11 @@ class Bot {
 
     this.discord = new _discord2.default.Client({ autoReconnect: true });
     var wordnet = this.wordnet = new _natural.WordNet();
+    this.isNumeric = function(n) {
+      return !isNaN(parseFloat(n)) && isFinite(n);
+
+    }
+
     this.findword = function(g,jj){
        var deferred = _q.defer();
       var msgs = []
@@ -96,7 +139,10 @@ class Bot {
     this.channels = _lodash2.default.values(options.channelMapping);
     this.ircStatusNotices = options.ircStatusNotices;
     this.announceSelfJoin = options.announceSelfJoin;
-    this.emojis = _emojis//['cake': '🍰', '🤷', '🍌','⌛', '💣', '🔋', '🎂', '🍂', '⚽','🤖']
+    this.emojis = _lodash.merge(_emojis, _emojis_old.emoji)
+
+
+    //['cake': '🍰', '🤷', '🍌','⌛', '💣', '🔋', '🎂', '🍂', '⚽','🤖']
 
     this.format = options.format || {};
     // "{$keyName}" => "variableValue"
@@ -175,20 +221,31 @@ class Bot {
     });
 
     this.discord.on('message', message => {
+
       // Ignore bot messages and people leaving/joining
       this.sendToIRC(message);
       var roll = Math.random() * 100;
       _winston2.default.info('rolled a '+roll+' vs '+this.throttle);
       this.throttle -= (0.25 + ((new Date().getTime()/1000 - this.last_msg_time) * 133/115200));
       this.last_msg_time = new Date().getTime()/1000;
-      if ( roll > this.throttle){
-        var msg = this.parseText(message);
-        var presynmsgs = _lodash.reject(_lodash.split(msg.replace(/(dicks?|pussy|penis|assholes?|butts?)/,
-                                             'eggplant').replace(/(shits?|asse?s?|crap)/,
-                                                                 'poop'),' '), function(g){return _lodash.includes(['it'],g)});
+      var msg = this.parseText(message);
+      var should_msg = roll > ( /fernickle/.exec(msg) ? 0 : this.throttle )
+      var presynmsgs = _lodash.reject(_lodash.split(msg.replace(/(dicks?|pussy|penis|assholes?|butts?)/,
+                                                                'eggplant'),' '), function(g){return _lodash.includes(['it'],g)} || this.isNumeric(g) );
 
+      if(_sentiment(msg) >= 3 && Math.random() > 0.5){
+        var positive_response = positive_responses[Math.floor(Math.random() * positive_responses.length)]
+        if(should_msg)responder(message, positive_response, this)
+        saveFact(msg, positive_response)
+      }
+      else if(_sentiment(msg) <= -3 && Math.random() > 0.5){
+        var negative_response = negative_responses[Math.floor(Math.random() * negative_responses.length)]
+        if(should_msg)responder(message, negative_response, this)
+        saveFact(msg, negative_response)
+      }
+      else{
         var _this = this
-        var promises = _lodash.map(presynmsgs, function(g){_winston.info('calling?'); return _this.findword(g)})
+        var promises = _lodash.map(presynmsgs, function(g){ return _this.findword(g)})
         _winston2.default.info(_util.inspect(promises))
         _q.all(promises).done(function(y){
           var msgs = _lodash.uniq(_lodash.flatten(y))
@@ -200,19 +257,18 @@ class Bot {
           var a = _this.emojis[find];
           if (a){
             _winston2.default.info('contextual from '+msg+' '+a);
-            if(message.react(a))
-              _this.throttle = 100;
+            if(should_msg)responder(message, a, _this)
+            saveFact(msg, find)
           }
           else{
             var len = _lodash.keys(_this.emojis).length;
             var keys = _lodash.keys(_this.emojis);
             var g = _this.emojis[keys[Math.floor(Math.random() * len)]]
             _winston2.default.info('random '+g);
-            if(message.react(g))
-              _this.throttle = 100;
+            if(should_msg)responder(message, g, _this)
           }
-        },function(l){_winston2.default('failed')})
-      }});
+        }
+                             )}});
 
     this.ircClient.on('message', this.sendToDiscord.bind(this));
 
@@ -227,12 +283,12 @@ class Bot {
       const channel = channelName.toLowerCase();
       // self-join is announced before names (which includes own nick)
       // so don't add nick to channelUsers
-	if (nick !== this.nickname) {
-	    if(!this.channelUsers[channel]){
-		this.channelUsers[channel] = new Set(Object.keys(nick))
-	    }
-	    this.channelUsers[channel].add(nick);
+      if (nick !== this.nickname) {
+	if(!this.channelUsers[channel]){
+	  this.channelUsers[channel] = new Set(Object.keys(nick))
 	}
+	this.channelUsers[channel].add(nick);
+      }
       //this.sendExactToDiscord(channel, `*${nick}* has joined the channel`);
     });
 
