@@ -105,7 +105,16 @@ _winston2.default.add(_winston2.default.transports.Console, {
 
 });
 
+var path = require("path");
 
+var base_folder = path.join(path.dirname(require.resolve("natural")), "brill_pos_tagger");
+var rulesFilename = base_folder + "/data/English/tr_from_posjs.txt";
+var lexiconFilename = base_folder + "/data/English/lexicon_from_posjs.json";
+var defaultCategory = 'N';
+
+var lexicon = new _natural.Lexicon(lexiconFilename, defaultCategory);
+var rules = new _natural.RuleSet(rulesFilename);
+var tagger = new _natural.BrillPOSTagger(lexicon, rules);
 
 function responder(m,a,obj){
   m.react(a);
@@ -114,9 +123,20 @@ function responder(m,a,obj){
 }
 
 function saveFact(msg, emoji){
-  if(/([^\s]+) (is|are) (?: same)(?: as)(?: like)([^\s].+)\s$/.exec(msg)){
-    _winston2.default.trace(`adding ${RegExp.$1} ${RegExp.$2} ${emoji}`);
-    _client.sadd("emoji-fact-brain:"+RegExp.$1, RegExp.$2, emoji);
+  if(/([^\s]+)\s(?:is|are)(?! not)(?: the)?(?: same)?(?: as)?(?: like)?\s*([^\s]+)$/.exec(msg)){
+    if(!_lodash.some(_lodash.map(tagger.tag([RegExp.$2, Regexp.$1]), function(g){return g[1]}), function(x){ return x == "PRP"})){
+      var db_string = "emoji-fact-brain:"+emoji+":p:"+RegExp.$2;
+      var count = _client.hget(db_string) || 1;
+      _winston2.default.help("Writing "+db_string)
+      _client.hset(db_string, count);
+    }
+  } else if(/([^\s]+)\s(?:(?:(?:is|are)(?: not))|(?:aren't|isn't))(?: the)?(?: same)?(?: as)?(?: like)?\s*([^\s]+)$/.exec(msg)){
+    if(!_lodash.some(_lodash.map(tagger.tag([RegExp.$2, Regexp.$1]), function(g){return g[1]}), function(x){ return x == "PRP"})){
+      var db_string = "emoji-fact-brain:"+emoji+":n:"+RegExp.$2;
+      var count = _client.hget(db_string) || 1;
+      _winston2.default.help("Writing "+db_string)
+      _client.hset(db_string, count);
+    }
   }
 }
 
@@ -254,12 +274,12 @@ class Bot {
       // Ignore bot messages and people leaving/joining
       this.sendToIRC(message);
       var roll = Math.random() * 100;
-      _winston2.default.info('******************** rolled a '+roll+' vs '+this.throttle);
-      this.throttle -= (0.25 + ((new Date().getTime()/1000 - this.last_msg_time) * 1/36));
+      this.throttle -= (0.25 + ((new Date().getTime()/1000 - this.last_msg_time) * 1/72));
       this.last_msg_time = new Date().getTime()/1000;
       var msg = this.parseText(message);
       var should_msg = roll > ( /fernickle/.exec(msg) ? 0 : this.throttle )
-      if(should_msg)_winston2.default.info('WRITING for '+msg);
+      _winston2.default.verbose('******************** rolled a '+roll+' vs '+this.throttle);
+      if(should_msg)_winston2.default.input('WRITING for '+msg);
       var presynmsgs = _lodash.reject(_lodash.split(msg.replace(/(dicks?|pussy|penis|assholes?|butts?)/,
                                                                 'eggplant'),' '), function(g){return _lodash.includes(['it', 'a', 'i'],g)} || this.isNumeric(g) );
 
@@ -282,14 +302,13 @@ class Bot {
       else{
         var _this = this
         var promises = _lodash.map(presynmsgs, function(g){ return _this.findword(g)})
-        _winston2.default.info(_util.inspect(promises))
         _q.all(promises).done(function(y){
           var msgs = _lodash.uniq(_lodash.flatten(y))
-          _winston2.default.info(msgs)
+          //_winston2.default.info(msgs)
           var scrambledkeys = _lodash.sortBy(_lodash.keys(_this.emojis), function(){return Math.random()});
           var find = _lodash.find(scrambledkeys,
                                   function(g){ return _lodash.find(msgs, function(x){return _distance(x,_lodash.lowerCase(g)) > 0.95})})
-          _winston2.default.info(`find found - ${find} - ${msg} `)
+          _winston2.default.trace(`find found - ${find} - ${msg} `)
           var a = _this.emojis[find];
           if (a){
             _winston2.default.info('contextual from '+msg+' '+a);
