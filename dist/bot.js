@@ -67,26 +67,55 @@ const negative_responses = ['-1','angry']
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var myCustomLevels = {
-  levels: {
-    brain: 0,
-  },
-  colors: {
-    brain: 'yellow',
-  }
+_winston2.default.setLevels({
+  trace: 9,
+  input: 8,
+  verbose: 7,
+  prompt: 6,
+  debug: 5,
+  info: 4,
+  data: 3,
+  help: 2,
+  warn: 1,
+  error: 0
 
-};
+});
 
-var _w = new (_winston.Logger)({ levels: myCustomLevels.levels });
-_winston.addColors(myCustomLevels.colors)
+_winston2.default.addColors({
+  trace: 'magenta',
+  input: 'grey',
+  verbose: 'cyan',
+  prompt: 'grey',
+  debug: 'blue',
+  info: 'green',
+  data: 'grey',
+  help: 'cyan',
+  warn: 'yellow',
+  error: 'red'
+
+});
+
+_winston2.default.remove(_winston2.default.transports.Console)
+_winston2.default.add(_winston2.default.transports.Console, {
+  level: 'trace',
+  prettyPrint: true,
+  colorize: true,
+  silent: false,
+  timestamp: false
+
+});
+
+
+
 function responder(m,a,obj){
   m.react(a);
+  _winston2.default.info(`******* responding with ${a}`);
   obj.throttle = 100;
 }
 
 function saveFact(msg, emoji){
-  if(/([^\s]+) is (?: same)(?: as)(?: like)([^\s].+)/.exec(msg)){
-    _w.brain(`adding ${RegExp.$1} ${RegExp.$2} ${emoji}`);
+  if(/([^\s]+) (is|are) (?: same)(?: as)(?: like)([^\s].+)\s$/.exec(msg)){
+    _winston2.default.trace(`adding ${RegExp.$1} ${RegExp.$2} ${emoji}`);
     _client.sadd("emoji-fact-brain:"+RegExp.$1, RegExp.$2, emoji);
   }
 }
@@ -225,22 +254,29 @@ class Bot {
       // Ignore bot messages and people leaving/joining
       this.sendToIRC(message);
       var roll = Math.random() * 100;
-      _winston2.default.info('rolled a '+roll+' vs '+this.throttle);
-      this.throttle -= (0.25 + ((new Date().getTime()/1000 - this.last_msg_time) * 133/115200));
+      _winston2.default.info('******************** rolled a '+roll+' vs '+this.throttle);
+      this.throttle -= (0.25 + ((new Date().getTime()/1000 - this.last_msg_time) * 1/36));
       this.last_msg_time = new Date().getTime()/1000;
       var msg = this.parseText(message);
       var should_msg = roll > ( /fernickle/.exec(msg) ? 0 : this.throttle )
+      if(should_msg)_winston2.default.info('WRITING for '+msg);
       var presynmsgs = _lodash.reject(_lodash.split(msg.replace(/(dicks?|pussy|penis|assholes?|butts?)/,
-                                                                'eggplant'),' '), function(g){return _lodash.includes(['it'],g)} || this.isNumeric(g) );
+                                                                'eggplant'),' '), function(g){return _lodash.includes(['it', 'a', 'i'],g)} || this.isNumeric(g) );
 
-      if(_sentiment(msg) >= 3 && Math.random() > 0.5){
+      if(_sentiment(msg) >= 3 && Math.random() > 0.8){
         var positive_response = positive_responses[Math.floor(Math.random() * positive_responses.length)]
-        if(should_msg)responder(message, positive_response, this)
+        if(should_msg){
+          responder(message, positive_response, this)
+          _winston2.default.info('******************** positive '+positive_response)
+        }
         saveFact(msg, positive_response)
       }
-      else if(_sentiment(msg) <= -3 && Math.random() > 0.5){
+      else if(_sentiment(msg) <= -3 && Math.random() > 0.8){
         var negative_response = negative_responses[Math.floor(Math.random() * negative_responses.length)]
-        if(should_msg)responder(message, negative_response, this)
+        if(should_msg){
+          responder(message, negative_response, this)
+          _winston2.default.info('******************** negative '+negative_response)
+        }
         saveFact(msg, negative_response)
       }
       else{
@@ -260,11 +296,11 @@ class Bot {
             if(should_msg)responder(message, a, _this)
             saveFact(msg, find)
           }
-          else{
+          else if(should_msg){
             var len = _lodash.keys(_this.emojis).length;
             var keys = _lodash.keys(_this.emojis);
             var g = _this.emojis[keys[Math.floor(Math.random() * len)]]
-            _winston2.default.info('random '+g);
+            _winston2.default.info('************************* random '+g);
             if(should_msg)responder(message, g, _this)
           }
         }
