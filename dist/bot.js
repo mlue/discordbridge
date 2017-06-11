@@ -124,7 +124,7 @@ function responder(m,a,obj){
 
 function saveFact(msg, emoji, s, user){
   //I wanna encode the source with the fact to build a profile? and build a knowledge of knowldge
-  var db_string = s == 'o' ? "emoji-fact-brain:" : "emoji-sentiment-brain:"
+  var db_string = "emoji-sentiment-brain:"
   if(/([^\s]+)\s(?:is|are|likes?)(?! not)(?: the)?(?: same)?(?: as)?(?: like)?\s*([^\s]+)$/.exec(msg)){
     if(!_lodash.some(_lodash.map(tagger.tag([RegExp.$2, RegExp.$1]), function(g){return g[1]}), function(x){ return x == "PRP"})){
       var two = RegExp.$2
@@ -134,7 +134,7 @@ function saveFact(msg, emoji, s, user){
         _winston2.default.help("READ "+JSON.stringify(obj))
         var value = obj ? parseInt(obj) + 1 : 1
         _winston2.default.help("Writing "+db_string+" "+value)
-        _client.hset(db_string, s == 'o' ? one : two , value, redis.print)
+        _client.hset(db_string, two , value, redis.print)
 
       });
     }
@@ -143,11 +143,11 @@ function saveFact(msg, emoji, s, user){
       var two = RegExp.$2
       var one = RegExp.$1
       db_string += s == 'o' ? emoji+":"+user+":n" : user+":"+one+(/likes/.exec(msg) ? ":d" : ":n");
-      _client.hget(db_string, s == 'o' ? two : one, function(err, obj){
+      _client.hget(db_string, two, function(err, obj){
         _winston2.default.help("READ "+JSON.stringify(obj))
         var value = obj ? parseInt(obj) + 1 : 1
         _winston2.default.help("Writing "+db_string+" "+value)
-        _client.hset(db_string, s == 'o' ? one : two, value, redis.print)
+        _client.hset(db_string, two, value, redis.print)
 
       });
     }
