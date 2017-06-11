@@ -122,14 +122,14 @@ function responder(m,a,obj){
   obj.throttle = 100;
 }
 
-function saveFact(msg, emoji, s, user = null){
+function saveFact(msg, emoji, s, user){
   //I wanna encode the source with the fact to build a profile? and build a knowledge of knowldge
   var db_string = s == 'o' ? "emoji-fact-brain:" : "emoji-sentiment-brain:"
   if(/([^\s]+)\s(?:is|are|likes?)(?! not)(?: the)?(?: same)?(?: as)?(?: like)?\s*([^\s]+)$/.exec(msg)){
     if(!_lodash.some(_lodash.map(tagger.tag([RegExp.$2, RegExp.$1]), function(g){return g[1]}), function(x){ return x == "PRP"})){
       var two = RegExp.$2
       var one = RegExp.$1
-      db_string += s == 'o' ? emoji+":p" : user+":"+one+(/likes/.exec(msg) ? ":l" : ":p");
+      db_string += s == 'o' ? emoji+":"+user+":p" : user+":"+one+(/likes/.exec(msg) ? ":l" : ":p");
       _client.hget(db_string, s == 'o' ? two : one, function(err, obj){
         _winston2.default.help("READ "+JSON.stringify(obj))
         var value = obj ? parseInt(obj) + 1 : 1
@@ -142,7 +142,7 @@ function saveFact(msg, emoji, s, user = null){
     if(!_lodash.some(_lodash.map(tagger.tag([RegExp.$2, RegExp.$1]), function(g){return g[1]}), function(x){ return x == "PRP"})){
       var two = RegExp.$2
       var one = RegExp.$1
-      db_string += s == 'o' ? emoji+":n" : user+":"+one+(/likes/.exec(msg) ? ":d" : ":n");
+      db_string += s == 'o' ? emoji+":"+user+":n" : user+":"+one+(/likes/.exec(msg) ? ":d" : ":n");
       _client.hget(db_string, s == 'o' ? two : one, function(err, obj){
         _winston2.default.help("READ "+JSON.stringify(obj))
         var value = obj ? parseInt(obj) + 1 : 1
@@ -327,7 +327,7 @@ class Bot {
           if (a){
             _winston2.default.info('contextual from -- '+msg+' -- '+a);
             if(should_msg)responder(message, a, _this)
-            saveFact(msg, find.replace(/\:/g,''), s, user)
+            saveFact(msg, find.replace(/\:/g,''), s, message.author.username)
           }
           else if(should_msg){
             var len = _lodash.keys(_this.emojis).length;
