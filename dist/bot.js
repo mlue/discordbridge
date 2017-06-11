@@ -17,7 +17,7 @@ var ekeys = require("emojis-keywords"),  evalues = require("emojis-list");
 
 var redis = require('redis')
 
-var _client = redis.createClient();
+_client = redis.createClient();
 
 const _emojis_old = require("emoji-name-map");
 
@@ -122,20 +122,30 @@ function responder(m,a,obj){
   obj.throttle = 100;
 }
 
-function saveFact(msg, emoji){
+function saveFact(msg, emoji, s, user = null){
+  //I wanna encode the source with the fact to build a profile? and build a knowledge of knowldge
+  var db_string = s == 'o' ? "emoji-fact-brain:" : "emoji-sentiment-brain:"
   if(/([^\s]+)\s(?:is|are)(?! not)(?: the)?(?: same)?(?: as)?(?: like)?\s*([^\s]+)$/.exec(msg)){
-    if(!_lodash.some(_lodash.map(tagger.tag([RegExp.$2, Regexp.$1]), function(g){return g[1]}), function(x){ return x == "PRP"})){
-      var db_string = "emoji-fact-brain:"+emoji+":p:"+RegExp.$2;
-      var count = _client.hget(db_string) || 1;
-      _winston2.default.help("Writing "+db_string)
-      _client.hset(db_string, count);
+    if(!_lodash.some(_lodash.map(tagger.tag([RegExp.$2, RegExp.$1]), function(g){return g[1]}), function(x){ return x == "PRP"})){
+      db_string += s == 'o' ? emoji+":p" : user.username+":"+emoji+":p";
+      _client.hget(db_string, RegExp.$2, function(err, obj){
+        _winston2.default.help("READ "+JSON.stringify(obj))
+        var value = obj ? parseInt(obj) + 1 : 1
+        _winston2.default.help("Writing "+db_string+" "+value)
+        _client.hset(db_string, RegExp.$2, value, redis.print)
+
+      });
     }
   } else if(/([^\s]+)\s(?:(?:(?:is|are)(?: not))|(?:aren't|isn't))(?: the)?(?: same)?(?: as)?(?: like)?\s*([^\s]+)$/.exec(msg)){
-    if(!_lodash.some(_lodash.map(tagger.tag([RegExp.$2, Regexp.$1]), function(g){return g[1]}), function(x){ return x == "PRP"})){
-      var db_string = "emoji-fact-brain:"+emoji+":n:"+RegExp.$2;
-      var count = _client.hget(db_string) || 1;
-      _winston2.default.help("Writing "+db_string)
-      _client.hset(db_string, count);
+    if(!_lodash.some(_lodash.map(tagger.tag([RegExp.$2, RegExp.$1]), function(g){return g[1]}), function(x){ return x == "PRP"})){
+      db_string += emoji+":n";
+      _client.hget(db_string, RegExp.$2, function(err, obj){
+        _winston2.default.help("READ "+JSON.stringify(obj))
+        var value = obj ? parseInt(obj) + 1 : 1
+        _winston2.default.help("Writing "+db_string+" "+value)
+        _client.hset(db_string, RegExp.$2, value, redis.print)
+
+      });
     }
   }
 }
@@ -269,8 +279,9 @@ class Bot {
       _winston2.default.warn('Received warn event from Discord', warning);
     });
 
-    this.discord.on('message', message => {
 
+    //anchor
+    var l = (message, s, user = null) => {
       // Ignore bot messages and people leaving/joining
       this.sendToIRC(message);
       var roll = Math.random() * 100;
@@ -283,37 +294,38 @@ class Bot {
       var presynmsgs = _lodash.reject(_lodash.split(msg.replace(/(dicks?|pussy|penis|assholes?|butts?)/,
                                                                 'eggplant'),' '), function(g){return _lodash.includes(['it', 'a', 'i'],g)} || this.isNumeric(g) );
 
-      if(_sentiment(msg) >= 3 && Math.random() > 0.8){
+      if(_sentiment(msg) >= 2){
         var positive_response = positive_responses[Math.floor(Math.random() * positive_responses.length)]
         if(should_msg){
-          responder(message, positive_response, this)
+          //responder(message, positive_response, this)
           _winston2.default.info('******************** positive '+positive_response)
         }
-        saveFact(msg, positive_response)
+        saveFact(msg, positive_response, s)
       }
-      else if(_sentiment(msg) <= -3 && Math.random() > 0.8){
+      else if(_sentiment(msg) <= -2){
         var negative_response = negative_responses[Math.floor(Math.random() * negative_responses.length)]
         if(should_msg){
-          responder(message, negative_response, this)
+          //responder(message, negative_response, this)
           _winston2.default.info('******************** negative '+negative_response)
         }
-        saveFact(msg, negative_response)
+        saveFact(msg, negative_response,s)
       }
-      else{
+      if(true){
         var _this = this
         var promises = _lodash.map(presynmsgs, function(g){ return _this.findword(g)})
         _q.all(promises).done(function(y){
           var msgs = _lodash.uniq(_lodash.flatten(y))
-          //_winston2.default.info(msgs)
+          _winston2.default.info(msgs)
           var scrambledkeys = _lodash.sortBy(_lodash.keys(_this.emojis), function(){return Math.random()});
+          //TODO MERGE brain associations back into associative array?
           var find = _lodash.find(scrambledkeys,
-                                  function(g){ return _lodash.find(msgs, function(x){return _distance(x,_lodash.lowerCase(g)) > 0.95})})
+                                  function(g){ return _lodash.find(msgs, function(x){return _distance(x,_lodash.lowerCase(g)) >= 0.99})})
           _winston2.default.trace(`find found - ${find} - ${msg} `)
           var a = _this.emojis[find];
           if (a){
-            _winston2.default.info('contextual from '+msg+' '+a);
+            _winston2.default.info('contextual from -- '+msg+' -- '+a);
             if(should_msg)responder(message, a, _this)
-            saveFact(msg, find)
+            saveFact(msg, find.replace(/\:/g,''), s, user)
           }
           else if(should_msg){
             var len = _lodash.keys(_this.emojis).length;
@@ -323,7 +335,18 @@ class Bot {
             if(should_msg)responder(message, g, _this)
           }
         }
-                             )}});
+                             )}
+    }
+
+    this.discord.on('message', message => {
+      l(message, 'o')
+    });
+
+    this.discord.on('messageReactionAdd', (messageReaction, user) => {
+      //builds indexes reaction to a simple proposition as a hash map for user sentiment profiles
+      _winston2.default.debug('reaction:', messageReaction.emoji.name, user);
+      l(messageReaction.message,'t', user)
+    });
 
     this.ircClient.on('message', this.sendToDiscord.bind(this));
 
