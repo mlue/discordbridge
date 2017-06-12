@@ -124,8 +124,8 @@ function responder(m,a,obj){
 
 function saveFact(msg, emoji, s, user){
   //I wanna encode the source with the fact to build a profile? and build a knowledge of knowldge
-  var db_string = "emoji-sentiment-brain:"
-  if(/([^\s]+)\s(?:is|are|likes?)(?! not)(?: the)?(?: same)?(?: as)?(?: like)?\s*([^\s]+)$/.exec(msg)){
+  var db_string = s == 'o' ? "emoji-fact-brain:" : "emoji-sentiment-brain:"
+  if(/([^\s]+)\s(?:is|are|likes?)(?! not)(?: the)?(?: same)?(?: as)?(?: like)?\s*([^\s]+)/.exec(msg)){
     if(!_lodash.some(_lodash.map(tagger.tag([RegExp.$2, RegExp.$1]), function(g){return g[1]}), function(x){ return x == "PRP"})){
       var two = RegExp.$2
       var one = RegExp.$1
@@ -138,7 +138,7 @@ function saveFact(msg, emoji, s, user){
 
       });
     }
-  } else if(/([^\s]+)\s(?:(?:(?:is|are)(?: not))|(?:doesn't\slike)|(?:aren't|isn't))(?: the)?(?: same)?(?: as)?(?: like)?\s*([^\s]+)$/.exec(msg)){
+  } else if(/([^\s]+)\s(?:(?:(?:is|are)(?: not))|(?:doesn't\slike)|(?:aren't|isn't))(?: the)?(?: same)?(?: as)?(?: like)?\s*([^\s]+)/.exec(msg)){
     if(!_lodash.some(_lodash.map(tagger.tag([RegExp.$2, RegExp.$1]), function(g){return g[1]}), function(x){ return x == "PRP"})){
       var two = RegExp.$2
       var one = RegExp.$1
@@ -387,7 +387,7 @@ class Bot {
       } else {
         _winston2.default.warn(`No channelUsers found for ${channel} when ${nick} parted.`);
       }
-      this.sendExactToDiscord(channel, `*${nick}* has left the channel (${reason})`);
+      //this.sendExactToDiscord(channel, `*${nick}* has left the channel (${reason})`);
     });
 
     this.ircClient.on('quit', (nick, reason, channels) => {
