@@ -126,7 +126,7 @@ function saveFact(msg, emoji, s, user){
   //I wanna encode the source with the fact to build a profile? and build a knowledge of knowldge
   var db_string = s == 'o' ? "emoji-fact-brain:" : "emoji-sentiment-brain:"
   if(/([^\s]+)\s(?:is|are|likes?)(?! not)(?: the)?(?: same)?(?: as)?(?: like)?\s*([^\s]+)/.exec(msg)){
-    if(!_lodash.some(_lodash.map(tagger.tag([RegExp.$2, RegExp.$1]), function(g){return g[1]}), function(x){ return x == "PRP"})){
+    if(!_lodash.some(_lodash.map(tagger.tag([RegExp.$2, RegExp.$1]), function(g){return g[1]}), function(x){ return _lodash.includes(["PRP","DT"], x)})){
       var two = RegExp.$2
       var one = RegExp.$1
       db_string += s == 'o' ? emoji+":"+user+":p" : user+":"+one+(/likes/.exec(msg) ? ":l" : ":p");
@@ -292,7 +292,7 @@ class Bot {
       this.throttle -= (0.25 + ((new Date().getTime()/1000 - this.last_msg_time) * 1/72));
       this.last_msg_time = new Date().getTime()/1000;
       var msg = this.parseText(message);
-      var should_msg = roll > ( /fernickle/.exec(msg) ? 0 : this.throttle )
+      var should_msg = roll > ( /fernickle/.exec(msg) ? 10 : this.throttle )
       _winston2.default.verbose('******************** rolled a '+roll+' vs '+this.throttle);
       if(should_msg)_winston2.default.input('WRITING for '+msg);
       var presynmsgs = _lodash.reject(_lodash.split(msg.replace(/(dicks?|pussy|penis|assholes?|butts?)/,
