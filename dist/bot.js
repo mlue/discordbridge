@@ -21,12 +21,6 @@ _client = redis.createClient();
 
 const _emojis_old = require("emoji-name-map");
 
-for (var i = 0; i < ekeys.length; i++) {
-  //or check with: if (b.length > i) { assignment }
-  if(!/flag_(?!us|en)/.exec(ekeys[i])) _emojis[ekeys[i]] = evalues[i]
-
-}
-
 pry = require('pryjs')
 
 const _q = require("q");
@@ -115,6 +109,15 @@ var defaultCategory = 'N';
 var lexicon = new _natural.Lexicon(lexiconFilename, defaultCategory);
 var rules = new _natural.RuleSet(rulesFilename);
 var tagger = new _natural.BrillPOSTagger(lexicon, rules);
+
+
+for (var i = 0; i < ekeys.length; i++) {
+  //or check with: if (b.length > i) { assignment }
+  if(!/(?:flag_(?!us|en)..:|:on:|:back:)/.exec(ekeys[i])) _emojis[ekeys[i]] = evalues[i]
+  else _winston2.default.info("OMITTING ",ekeys[i])
+
+}
+
 
 function responder(m,a,obj){
   m.react(a);
@@ -298,7 +301,7 @@ class Bot {
       var presynmsgs = _lodash.reject(_lodash.split(msg.replace(/(dicks?|pussy|penis|assholes?|butts?)/,
                                                                 'eggplant'),' '), function(g){return _lodash.includes(['it', 'a', 'i'],g)} || this.isNumeric(g) );
 
-      _winston2.default.info('******************** MESSAGE SENTIMENT',_sentiment(msg).score)
+      _winston2.default.info('******************** MESSAGE SENTIMENT ',_sentiment(msg).score)
       if(_sentiment(msg).score >= 2){
         var positive_response = positive_responses[0]//Math.floor(Math.random() * positive_responses.length)]
         //responder(message, positive_response, this)
