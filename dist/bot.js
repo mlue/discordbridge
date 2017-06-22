@@ -23,7 +23,7 @@ const _emojis_old = require("emoji-name-map");
 
 for (var i = 0; i < ekeys.length; i++) {
   //or check with: if (b.length > i) { assignment }
-  _emojis[ekeys[i]] = evalues[i]
+  if(!/flag_(?!us|en)/.exec(ekeys[i])) _emojis[ekeys[i]] = evalues[i]
 
 }
 
@@ -293,8 +293,8 @@ class Bot {
       this.last_msg_time = new Date().getTime()/1000;
       var msg = this.parseText(message);
       var should_msg = roll > ( /fernickle/.exec(msg) ? 10 : this.throttle )
-      _winston2.default.verbose('******************** rolled a '+roll+' vs '+this.throttle);
-      if(should_msg)_winston2.default.input('WRITING for '+msg);
+      _winston2.default.verbose('******************** rolled a '+roll+' vs '+( /fernickle/.exec(msg) ? 10 : this.throttle ));
+      if(should_msg)_winston2.default.input("WRITING for "+msg+"\n\n\n\n");
       var presynmsgs = _lodash.reject(_lodash.split(msg.replace(/(dicks?|pussy|penis|assholes?|butts?)/,
                                                                 'eggplant'),' '), function(g){return _lodash.includes(['it', 'a', 'i'],g)} || this.isNumeric(g) );
 
