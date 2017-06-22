@@ -321,7 +321,7 @@ class Bot {
           var scrambledkeys = _lodash.sortBy(_lodash.keys(_this.emojis), function(){return Math.random()});
           //TODO MERGE brain associations back into associative array?
           var find = _lodash.find(scrambledkeys,
-                                  function(g){ return _lodash.find(msgs, function(x){return _distance(x,_lodash.lowerCase(g)) >= 0.99})})
+                                  function(g){ return _lodash.find(msgs, function(x){return _distance(_natural.PorterStemmer.stem(x),_natural.PorterStemmer.stem(_lodash.lowerCase(g))) >= 0.99})})
           _winston2.default.trace(`find found - ${find} - ${msg} `)
           var a = _this.emojis[find];
           if (a){
