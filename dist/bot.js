@@ -199,18 +199,18 @@ class Bot {
 
     this.findwordfrombrain = function(g,jj){
       var deferred = _q.defer();
-      var tally = -1
+      var tally = 0
       var msg = ''
       var dbstring = "emoji-fact-brain:"+g+":*:p"
+      _winston2.default.help(dbstring)
       _client.keys(dbstring,function(err, r){
         r.forEach(function(key){
-          _client.hkeys(key, function(err,replies){
-            replies.forEach(function(reply,i){
-              if(parseInt(i) > tally){
-                msg = reply
-                tally = parseInt(i)
-              }
-            })
+          _client.hgetall(key, function(err,obj){
+            _winston2.default.help(obj)
+            var d = Object.keys(obj).reduce(function(a, b){ return parseInt(obj[a]) > parseInt(obj[b]) ? a : b });
+            _winston2.default.help(tally)
+            _winston2.default.help(parseInt(obj[msg]))
+            if(tally < parseInt(obj[msg])){msg = d}
           })
         })
         deferred.resolve(msg)
