@@ -204,19 +204,25 @@ class Bot {
       var dbstring = "emoji-fact-brain:"+g+":*:p"
       _winston2.default.help(dbstring)
       _client.keys(dbstring,function(err, r){
+        var all = _lodash.map(r, function(){return _q.defer()});
         r.forEach(function(key){
           _client.hgetall(key, function(err,obj){
-            _winston2.default.help(obj)
             var d = Object.keys(obj).reduce(function(a, b){ return parseInt(obj[a]) > parseInt(obj[b]) ? a : b });
-            _winston2.default.help(tally)
-            _winston2.default.help(parseInt(obj[msg]))
-            if(tally < parseInt(obj[msg])){msg = d}
-          })
+            all[r.indexOf(key)].resolve({word: d, weight: parseInt(obj[d])})
+          })})
+        _q.all(_lodash.map(all, p => p.promise)).done(function(x){
+          if(_lodash.isEmpty(x)){
+            deferred.resolve('')
+          }
+          else{
+            _winston2.default.help("DLFKJSDLKFDJS"+_util.inspect(x))
+            var g = _lodash.find(x, {weight: _lodash.max(_lodash.map(x, g => g.weight))}).word;
+            deferred.resolve(g)
+          }
         })
-        deferred.resolve(msg)
-      });
-      return deferred.promise;}
-
+      })
+      return deferred.promise;
+    }
 
     this.server = options.server;
     this.last_msg_time = new Date().getTime()/1000;
