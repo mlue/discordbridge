@@ -199,18 +199,17 @@ class Bot {
 
     this.findwordfrombrain = function(g,jj){
       var deferred = _q.defer();
-      var tally = 0
+      var tally = -1
       var msg = ''
       var dbstring = "emoji-fact-brain:"+g+":*:p"
       _client.keys(dbstring,function(err, r){
         r.forEach(function(key){
           _client.hkeys(key, function(err,replies){
             replies.forEach(function(reply,i){
-              if(i > tally){
+              if(parseInt(i) > tally){
                 msg = reply
-                tally = i
+                tally = parseInt(i)
               }
-          _winston2.default.help("omg "+reply)
             })
           })
         })
@@ -347,7 +346,6 @@ class Bot {
       }
       if(true){
         var _this = this
-        //var promises = _lodash(presynmsgs).map( g => {[_this.findword(g), _this.findwordfrombrain(g)]}).flatten()//.reject(g => g == '')
         var promises = _lodash.flatten(_lodash.map(presynmsgs, function(g){ return [_this.findword(g), _this.findwordfrombrain(g)]}))
         _q.all(promises).done(function(y){
           var msgs = _lodash.uniq(_lodash.flatten(y))
