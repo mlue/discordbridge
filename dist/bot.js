@@ -132,8 +132,8 @@ function saveFact(msg, emoji, s, user){
   var db_string = s == 'o' ? "emoji-fact-brain:" : "emoji-sentiment-brain:"
   if(/([^\s]+)\s(?:is|are|likes?)(?! not)(?: the)?(?: same)?(?: as)?(?: like)?\s*([^\s]+)/.exec(msg)){
     if(!_lodash.some(_lodash.map(tagger.tag([RegExp.$2, RegExp.$1]), function(g){return g[1]}), function(x){ return _lodash.includes(["PRP","DT"], x)})){
-      var one = RegExp.$1 //s == "o" ? RegExp.$2 : RegExp.$1
-      var two = RegExp.$2 //s == "o" ? RegExp.$1 : RegExp.$2
+      var one = _natural.PorterStemmer.stem(RegExp.$1) //s == "o" ? RegExp.$2 : RegExp.$1
+      var two = _natural.PorterStemmer.stem(RegExp.$2) //s == "o" ? RegExp.$1 : RegExp.$2
       // o is fact s is sentiment - l for like vs positive association
       db_string += s == 'o' ? one+":"+user+":p" : user+":"+one+(/likes/.exec(msg) ? ":l" : ":p");
       _client.hget(db_string, s == 'o' ? two : one, function(err, obj){
@@ -147,8 +147,8 @@ function saveFact(msg, emoji, s, user){
   } else if(/([^\s]+)\s(?:(?:(?:is|are)(?: not))|(?:doesn't\slike)|(?:aren't|isn't))(?: the)?(?: same)?(?: as)?(?: like)?\s*([^\s]+)/.exec(msg)){
     //!_lodash.some(_lodash.map(tagger.tag([RegExp.$2, RegExp.$1]), function(g){return g[1]}), function(x){ return x == "PRP"})
     if(!_lodash(tagger.tag([RegExp.$2, RegExp.$1])).map(g => g[1]).some( x => x == "PRP")){
-      var one = RegExp.$1 //s == "o" ? RegExp.$2 : RegExp.$1
-      var two = RegExp.$2 //s == "o" ? RegExp.$1 : RegExp.$2
+      var one = _natural.PorterStemmer.stem(RegExp.$1) //s == "o" ? RegExp.$2 : RegExp.$1
+      var two = _natural.PorterStemmer.stem(RegExp.$2) //s == "o" ? RegExp.$1 : RegExp.$2
       db_string += s == 'o' ? one+":"+user+":n" : user+":"+one+(/likes/.exec(msg) ? ":d" : ":n");
       _client.hget(db_string, two, function(err, obj){
         _winston2.default.help("READ "+JSON.stringify(obj))
@@ -201,7 +201,7 @@ class Bot {
       var deferred = _q.defer();
       var tally = 0
       var msg = ''
-      var dbstring = "emoji-fact-brain:"+g+":*:p"
+      var dbstring = "emoji-fact-brain:"+_natural.PorterStemmer.stem(g)+":*:p"
       _winston2.default.help(dbstring)
       _client.keys(dbstring,function(err, r){
         var all = _lodash.map(r, function(){return _q.defer()});
