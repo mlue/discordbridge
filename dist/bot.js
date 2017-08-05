@@ -5,6 +5,8 @@
 
 /*jslint node: true */
 
+
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -95,11 +97,13 @@ _winston2.default.add(_winston2.default.transports.Console, {
   prettyPrint: true,
   colorize: true,
   silent: false,
-  timestamp: false
+  timestamp: true
 
 });
 
 var path = require("path");
+
+var _countrylist = _lodash.map(require('country-list')().getNames(), (c) => { return _lodash.lowerCase(c)});
 
 var base_folder = path.join(path.dirname(require.resolve("natural")), "brill_pos_tagger");
 var rulesFilename = base_folder + "/data/English/tr_from_posjs.txt";
@@ -113,9 +117,7 @@ var tagger = new _natural.BrillPOSTagger(lexicon, rules);
 
 for (var i = 0; i < ekeys.length; i++) {
   //or check with: if (b.length > i) { assignment }
-  if(!/(?:flag_(?!us|en)..:|:on:|:back:)/.exec(ekeys[i])) _emojis[ekeys[i]] = evalues[i]
-  else _winston2.default.info("OMITTING ",ekeys[i])
-
+  _emojis[ekeys[i]] = evalues[i]
 }
 
 
@@ -130,9 +132,10 @@ function saveFact(msg, emoji, s, user){
   var db_string = s == 'o' ? "emoji-fact-brain:" : "emoji-sentiment-brain:"
   if(/([^\s]+)\s(?:is|are|likes?)(?! not)(?: the)?(?: same)?(?: as)?(?: like)?\s*([^\s]+)/.exec(msg)){
     if(!_lodash.some(_lodash.map(tagger.tag([RegExp.$2, RegExp.$1]), function(g){return g[1]}), function(x){ return _lodash.includes(["PRP","DT"], x)})){
-      var two = RegExp.$2
-      var one = RegExp.$1
-      db_string += s == 'o' ? emoji+":"+user+":p" : user+":"+one+(/likes/.exec(msg) ? ":l" : ":p");
+      var one = RegExp.$1 //s == "o" ? RegExp.$2 : RegExp.$1
+      var two = RegExp.$2 //s == "o" ? RegExp.$1 : RegExp.$2
+      // o is fact s is sentiment - l for like vs positive association
+      db_string += s == 'o' ? one+":"+user+":p" : user+":"+one+(/likes/.exec(msg) ? ":l" : ":p");
       _client.hget(db_string, s == 'o' ? two : one, function(err, obj){
         _winston2.default.help("READ "+JSON.stringify(obj))
         var value = obj ? parseInt(obj) + 1 : 1
@@ -142,10 +145,11 @@ function saveFact(msg, emoji, s, user){
       });
     }
   } else if(/([^\s]+)\s(?:(?:(?:is|are)(?: not))|(?:doesn't\slike)|(?:aren't|isn't))(?: the)?(?: same)?(?: as)?(?: like)?\s*([^\s]+)/.exec(msg)){
-    if(!_lodash.some(_lodash.map(tagger.tag([RegExp.$2, RegExp.$1]), function(g){return g[1]}), function(x){ return x == "PRP"})){
-      var two = RegExp.$2
-      var one = RegExp.$1
-      db_string += s == 'o' ? emoji+":"+user+":n" : user+":"+one+(/likes/.exec(msg) ? ":d" : ":n");
+    //!_lodash.some(_lodash.map(tagger.tag([RegExp.$2, RegExp.$1]), function(g){return g[1]}), function(x){ return x == "PRP"})
+    if(!_lodash(tagger.tag([RegExp.$2, RegExp.$1])).map(g => g[1]).some( x => x == "PRP")){
+      var one = RegExp.$1 //s == "o" ? RegExp.$2 : RegExp.$1
+      var two = RegExp.$2 //s == "o" ? RegExp.$1 : RegExp.$2
+      db_string += s == 'o' ? one+":"+user+":n" : user+":"+one+(/likes/.exec(msg) ? ":d" : ":n");
       _client.hget(db_string, two, function(err, obj){
         _winston2.default.help("READ "+JSON.stringify(obj))
         var value = obj ? parseInt(obj) + 1 : 1
@@ -193,6 +197,27 @@ class Bot {
       });
       return deferred.promise;}
 
+    this.findwordfrombrain = function(g,jj){
+      var deferred = _q.defer();
+      var tally = 0
+      var msg = ''
+      var dbstring = "emoji-fact-brain:"+g+":*:p"
+      _client.keys(dbstring,function(err, r){
+        r.forEach(function(key){
+          _client.hkeys(key, function(err,replies){
+            replies.forEach(function(reply,i){
+              if(i > tally){
+                msg = reply
+                tally = i
+              }
+          _winston2.default.help("omg "+reply)
+            })
+          })
+        })
+        deferred.resolve(msg)
+      });
+      return deferred.promise;}
+
 
     this.server = options.server;
     this.last_msg_time = new Date().getTime()/1000;
@@ -205,7 +230,11 @@ class Bot {
     this.channels = _lodash2.default.values(options.channelMapping);
     this.ircStatusNotices = options.ircStatusNotices;
     this.announceSelfJoin = options.announceSelfJoin;
-    this.emojis = _lodash.merge(_emojis, _emojis_old.emoji)
+    this.emojis = _lodash.pickBy(_lodash.merge(_emojis, _emojis_old.emoji), (v, k) => {
+      //!/(?:flag_(?!us|en)..:|:on:|:back:)/.exec(k) && !_lodash.includes(_countrylist, k)
+      if(!/(?:flag_(?!us|en)..:|:on:|:back:)/.exec(k)) return true
+      else{_winston2.default.info("OMITTING ",k); return false}
+    })
 
 
     //['cake': '🍰', '🤷', '🍌','⌛', '💣', '🔋', '🎂', '🍂', '⚽','🤖']
@@ -290,13 +319,14 @@ class Bot {
     //anchor
     var l = (message, s, user = null) => {
       // Ignore bot messages and people leaving/joining
-      this.sendToIRC(message);
+      if(s != 't')this.sendToIRC(message);
       var roll = Math.random() * 100;
       this.throttle -= (0.25 + ((new Date().getTime()/1000 - this.last_msg_time) * 1/72));
       this.last_msg_time = new Date().getTime()/1000;
       var msg = this.parseText(message);
-      var should_msg = roll > ( /fernickle/.exec(msg) ? 10 : this.throttle )
-      _winston2.default.verbose('******************** rolled a '+roll+' vs '+( /fernickle/.exec(msg) ? 10 : this.throttle ));
+      var should_msg = roll > ( /begin analysis/.exec(msg) ? 10 : this.throttle )
+      _winston2.default.verbose('******************** rolled a '+roll+' vs '+( /begin analysis/.exec(msg) ? 10 : this.throttle ));
+      msg = msg.replace(/^(?:@gbp:?\s*)?begin analysis/,' ')
       if(should_msg)_winston2.default.input("WRITING for "+msg+"\n\n\n\n");
       var presynmsgs = _lodash.reject(_lodash.split(msg.replace(/(dicks?|pussy|penis|assholes?|butts?)/,
                                                                 'eggplant'),' '), function(g){return _lodash.includes(['it', 'a', 'i'],g)} || this.isNumeric(g) );
@@ -317,14 +347,15 @@ class Bot {
       }
       if(true){
         var _this = this
-        var promises = _lodash.map(presynmsgs, function(g){ return _this.findword(g)})
+        //var promises = _lodash(presynmsgs).map( g => {[_this.findword(g), _this.findwordfrombrain(g)]}).flatten()//.reject(g => g == '')
+        var promises = _lodash.flatten(_lodash.map(presynmsgs, function(g){ return [_this.findword(g), _this.findwordfrombrain(g)]}))
         _q.all(promises).done(function(y){
           var msgs = _lodash.uniq(_lodash.flatten(y))
           _winston2.default.info("MESSAGE", msgs)
           var scrambledkeys = _lodash.sortBy(_lodash.keys(_this.emojis), function(){return Math.random()});
           //TODO MERGE brain associations back into associative array?
           var find = _lodash.find(scrambledkeys,
-                                  function(g){ return _lodash.find(msgs, function(x){return _distance(_natural.PorterStemmer.stem(x),_natural.PorterStemmer.stem(_lodash.lowerCase(g))) >= 0.99})})
+                                  function(g){ return _lodash.find(msgs, function(x){return _distance(_natural.PorterStemmer.stem(x),_natural.PorterStemmer.stem(_lodash.lowerCase(g))) >= 0.96})})
           _winston2.default.trace(`find found - ${find} - ${msg} `)
           var a = _this.emojis[find];
           if (a){
@@ -336,7 +367,7 @@ class Bot {
             var len = _lodash.keys(_this.emojis).length;
             var keys = _lodash.keys(_this.emojis);
             var g = _this.emojis[keys[Math.floor(Math.random() * len)]]
-            _winston2.default.info('************************* random '+g);
+            _winston2.default.info('************************* random ',g,' ', _lodash.findKey(_this.emojis, (item) => (item == g)));
             if(should_msg)responder(message, g, _this)
           }
         }
@@ -344,6 +375,7 @@ class Bot {
     }
 
     this.discord.on('message', message => {
+      _winston2.default.trace('timestamp')
       l(message, 'o')
     });
 
