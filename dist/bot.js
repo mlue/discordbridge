@@ -122,8 +122,19 @@ for (var i = 0; i < ekeys.length; i++) {
   _emojis[ekeys[i]] = evalues[i]
 }
 
+var pre_merge_size = Object.keys(_emojis).length
+for(e in _emojis){
+  _lodash.split(e,'_').forEach(g => {
+    if(!_emojis[g] && e.length > 2){
+      _emojis[g] = _emojis[e]
+    }
+  })
+  _emojis[_emojis[e]] = _emojis[e]
+}
+var post_merge_size = Object.keys(_emojis).length
+
 var fs = require('fs');
-fs.writeFile("emojilist", _util.inspect(_emojis), function(err) {
+fs.writeFile("emojilist", `growth: ${pre_merge_size} to ${post_merge_size} `+_util.inspect(_emojis), function(err) {
   if(err) {
     return console.log(err);
 
@@ -215,7 +226,7 @@ class Bot {
       var dbstring = "emoji-fact-brain:"+_natural.PorterStemmer.stem(g)+":*:p"
       var _this = this;
       var reference = {}
-      _winston2.default.help(dbstring)
+      _winston2.default.help("LOOKING FOR"+dbstring)
       _client.keys(dbstring,function(err, r){
         var all = _lodash.map(r, function(){return _q.defer()});
         r.forEach(function(key){
@@ -270,7 +281,7 @@ class Bot {
     this.announceSelfJoin = options.announceSelfJoin;
     this.emojis = _lodash.pickBy(_lodash.merge(_emojis, _emojis_old.emoji), (v, k) => {
       //!/(?:flag_(?!us|en)..:|:on:|:back:)/.exec(k) && !_lodash.includes(_countrylist, k)
-      if(!/(?:flag_(?!us|en)..:|:on:|:back:|^one$|^two$|^three$|^four$)/.exec(k)) return true
+      if(!/(?:flag_(?!us|en)..:|:on:|:back:|^one$|^two$|^three$|^four$|^up$)/.exec(k)) return true
       else{_winston2.default.info("OMITTING ",k); return false}
     })
 
