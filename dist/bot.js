@@ -237,7 +237,7 @@ class Bot {
     this.announceSelfJoin = options.announceSelfJoin;
     this.emojis = _lodash.pickBy(_lodash.merge(_emojis, _emojis_old.emoji), (v, k) => {
       //!/(?:flag_(?!us|en)..:|:on:|:back:)/.exec(k) && !_lodash.includes(_countrylist, k)
-      if(!/(?:flag_(?!us|en)..:|:on:|:back:)/.exec(k)) return true
+      if(!/(?:flag_(?!us|en)..:|:on:|:back:|^one$|^two$|^three$|^four$)/.exec(k)) return true
       else{_winston2.default.info("OMITTING ",k); return false}
     })
 
@@ -367,7 +367,7 @@ class Bot {
             if(should_msg)responder(message, a, _this)
             saveFact(msg, find.replace(/\:/g,''), s, message.author.username)
           }
-          else if(should_msg){
+          else if(false){
             var len = _lodash.keys(_this.emojis).length;
             var keys = _lodash.keys(_this.emojis);
             var g = _this.emojis[keys[Math.floor(Math.random() * len)]]
