@@ -113,6 +113,8 @@ var defaultCategory = 'N';
 var lexicon = new _natural.Lexicon(lexiconFilename, defaultCategory);
 var rules = new _natural.RuleSet(rulesFilename);
 var tagger = new _natural.BrillPOSTagger(lexicon, rules);
+var nounInflector = new _natural.NounInflector();
+nounInflector.attach();
 
 
 for (var i = 0; i < ekeys.length; i++) {
@@ -120,6 +122,15 @@ for (var i = 0; i < ekeys.length; i++) {
   _emojis[ekeys[i]] = evalues[i]
 }
 
+var fs = require('fs');
+fs.writeFile("emojilist", _util.inspect(_emojis), function(err) {
+  if(err) {
+    return console.log(err);
+
+  }
+  console.log("The file was saved!");
+
+});
 
 function responder(m,a,obj){
   m.react(a);
@@ -193,7 +204,7 @@ class Bot {
         results.forEach(function(result) {
           msgs.push(...result.synonyms)
         });
-        deferred.resolve(msgs);
+        deferred.resolve([g,...msgs]);
       });
       return deferred.promise;}
 
@@ -203,19 +214,33 @@ class Bot {
       var msg = ''
       var dbstring = "emoji-fact-brain:"+_natural.PorterStemmer.stem(g)+":*:p"
       var _this = this;
+      var reference = {}
       _winston2.default.help(dbstring)
       _client.keys(dbstring,function(err, r){
         var all = _lodash.map(r, function(){return _q.defer()});
         r.forEach(function(key){
           _client.hgetall(key, function(err,obj){
-            _winston2.default.help("READING FROM BRAIN"+_util.inspect(obj))
+            _winston2.default.help("INSPECTING FROM BRAIN"+_util.inspect(obj))
             var sortedkeys = _lodash.sortBy(Object.keys(obj), e => obj[e])
+            sortedkeys.forEach( e => reference[e] = obj)
             var vall = _lodash.map(sortedkeys, e => _this.findword(e))
             _q.all(vall).done(function(syns){
               var syn = _lodash.flatten(syns)
-              var found_emoji = _lodash.find(_lodash.keys(_this.emojis), e => _lodash.includes(syn,e))
+              var found_emoji = null;
+              var identifier = syn[0];
+              _lodash.keys(_this.emojis).forEach( e => {
+                if(_lodash.includes(syn, e)){
+                  found_emoji = e.pluralizeNoun()
+                }
+                else if(_lodash.includes(syn, e.singularizeNoun())){
+                  found_emoji = e.singularizeNoun()
+                }
+                else if(_lodash.includes(syn, e.pluralizeNoun())){
+                  found_emoji = e.pluralizeNoun()
+                }
+              })
 //                var d = Object.keys(filtered).reduce(function(a, b){ return parseInt(obj[a]) > parseInt(obj[b]) ? a : b });
-              all[r.indexOf(key)].resolve(found_emoji ? {word: found_emoji, weight: parseInt(obj[found_emoji])} : {word: '', weight: 0})
+              all[r.indexOf(key)].resolve(found_emoji ? {word: found_emoji, weight: parseInt(reference[identifier][identifier])} : {word: '', weight: 0})
             })
           })})
         _q.all(_lodash.map(all, p => p.promise)).done(function(x){
