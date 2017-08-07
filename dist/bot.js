@@ -122,6 +122,8 @@ for (var i = 0; i < ekeys.length; i++) {
   _emojis[ekeys[i]] = evalues[i]
 }
 
+_emojis = _lodash.merge(_emojis, _emojis_old.emoji)
+
 var pre_merge_size = Object.keys(_emojis).length
 for(e in _emojis){
   _lodash.split(e,'_').forEach(g => {
@@ -131,6 +133,11 @@ for(e in _emojis){
   })
   _emojis[_emojis[e]] = _emojis[e]
 }
+_emojis = _lodash.pickBy(_emojis, (v, k) => {
+  //!/(?:flag_(?!us|en)..:|:on:|:back:)/.exec(k) && !_lodash.includes(_countrylist, k)
+  if(!/(?:flag_(?!us|en)..:|:on:|:back:|^one$|^two$|^three$|^four$|^up$|:do$)/.exec(k)) return true
+  else{_winston2.default.info("OMITTING ",k); return false}
+})
 var post_merge_size = Object.keys(_emojis).length
 
 var fs = require('fs');
@@ -223,15 +230,15 @@ class Bot {
       var deferred = _q.defer();
       var tally = 0
       var msg = ''
-      var dbstring = "emoji-fact-brain:"+_natural.PorterStemmer.stem(g)+":*:p"
+      var dbstring = "emoji-fact-brain:"+g+":*:p"
       var _this = this;
       var reference = {}
-      _winston2.default.help("LOOKING FOR"+dbstring)
+      _winston2.default.help("LOOKING FOR "+dbstring)
       _client.keys(dbstring,function(err, r){
         var all = _lodash.map(r, function(){return _q.defer()});
         r.forEach(function(key){
           _client.hgetall(key, function(err,obj){
-            _winston2.default.help("INSPECTING FROM BRAIN"+_util.inspect(obj))
+            _winston2.default.help("INSPECTING FROM BRAIN "+_util.inspect(obj))
             var sortedkeys = _lodash.sortBy(Object.keys(obj), e => obj[e])
             sortedkeys.forEach( e => reference[e] = obj)
             var vall = _lodash.map(sortedkeys, e => _this.findword(e))
@@ -259,7 +266,7 @@ class Bot {
             deferred.resolve('')
           }
           else{
-            _winston2.default.help("READING FROM BRAIN"+_util.inspect(x))
+            _winston2.default.help("READING FROM BRAIN "+_util.inspect(x))
             var g = _lodash.find(x, {weight: _lodash.max(_lodash.map(x, g => g.weight))}).word;
             deferred.resolve(g)
           }
@@ -279,11 +286,7 @@ class Bot {
     this.channels = _lodash2.default.values(options.channelMapping);
     this.ircStatusNotices = options.ircStatusNotices;
     this.announceSelfJoin = options.announceSelfJoin;
-    this.emojis = _lodash.pickBy(_lodash.merge(_emojis, _emojis_old.emoji), (v, k) => {
-      //!/(?:flag_(?!us|en)..:|:on:|:back:)/.exec(k) && !_lodash.includes(_countrylist, k)
-      if(!/(?:flag_(?!us|en)..:|:on:|:back:|^one$|^two$|^three$|^four$|^up$)/.exec(k)) return true
-      else{_winston2.default.info("OMITTING ",k); return false}
-    })
+    this.emojis = _emojis
 
 
     //['cake': '🍰', '🤷', '🍌','⌛', '💣', '🔋', '🎂', '🍂', '⚽','🤖']
@@ -373,7 +376,7 @@ class Bot {
       this.throttle -= (0.25 + ((new Date().getTime()/1000 - this.last_msg_time) * 1/72));
       this.last_msg_time = new Date().getTime()/1000;
       var msg = this.parseText(message);
-      var should_msg = roll > ( /begin analysis/.exec(msg) ? 10 : this.throttle )
+      var should_msg = roll > ( /(?:begin analysis|@gbp)/.exec(msg) ? 10 : this.throttle )
       _winston2.default.verbose('******************** rolled a '+roll+' vs '+( /begin analysis/.exec(msg) ? 10 : this.throttle ));
       msg = msg.replace(/^(?:@gbp:?\s*)?begin analysis/,' ')
       if(should_msg)_winston2.default.input("WRITING for "+msg+"\n\n\n\n");
