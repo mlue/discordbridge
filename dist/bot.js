@@ -31,9 +31,9 @@ const _natural = require("natural");
 
 const _distance = require("jaro-winkler")
 
-var _lodash = require('lodash');
+var _l = require('lodash');
 
-var _lodash2 = _interopRequireDefault(_lodash);
+var _lodash2 = _interopRequireDefault(_l);
 
 var _irc = require('irc');
 
@@ -103,7 +103,7 @@ _winston2.default.add(_winston2.default.transports.Console, {
 
 var path = require("path");
 
-var _countrylist = _lodash.map(require('country-list')().getNames(), (c) => { return _lodash.lowerCase(c)});
+var _countrylist = _l.map(require('country-list')().getNames(), (c) => { return _l.lowerCase(c)});
 
 var base_folder = path.join(path.dirname(require.resolve("natural")), "brill_pos_tagger");
 var rulesFilename = base_folder + "/data/English/tr_from_posjs.txt";
@@ -122,21 +122,21 @@ for (var i = 0; i < ekeys.length; i++) {
   _emojis[ekeys[i]] = evalues[i]
 }
 
-_emojis = _lodash.merge(_emojis, _emojis_old.emoji)
+_emojis = _l.merge(_emojis, _emojis_old.emoji)
 
 var pre_merge_size = Object.keys(_emojis).length
 for(e in _emojis){
-  _lodash.split(e,'_').forEach(g => {
+  _l.split(e,'_').forEach(g => {
     if(!_emojis[g] && e.length > 2){
       _emojis[g] = _emojis[e]
     }
   })
   _emojis[_emojis[e]] = _emojis[e]
 }
-_emojis = _lodash.pickBy(_emojis, (v, k) => {
-  //!/(?:flag_(?!us|en)..:|:on:|:back:)/.exec(k) && !_lodash.includes(_countrylist, k)
-  if(/(?:flag_(?!us|en)..:|:on:|:back:|^one$|^two$|^three$|^four$|^up$|:do$|^:?no:?$)/.exec(k)){_winston2.default.info("OMITTING ",k); return false}
-  else if(k.length == 2 && /^[a-z:]+$/.exec(k)){_winston2.default.info("OMITTING ",k); return false}
+_emojis = _l.pickBy(_emojis, (v, k) => {
+  //!/(?:flag_(?!us|en)..:|:on:|:back:)/.exec(k) && !_l.includes(_countrylist, k)
+  if(/(?:flag_(?!us|en)..:|:on:|:back:|^:?one:?$|^two$|^three$|^four$|^up$|:do$|^:?no:?$)/.exec(k)){_winston2.default.info("OMITTING ",k); return false}
+  else if(_l.trim(k,':').length == 2 && /^[a-z:]+$/.exec(k)){_winston2.default.info("OMITTING ",k); return false}
   else return true
 })
 var post_merge_size = Object.keys(_emojis).length
@@ -160,8 +160,8 @@ function responder(m,a,obj){
 function saveFact(msg, emoji, s, user){
   //I wanna encode the source with the fact to build a profile? and build a knowledge of knowldge
   var db_string = s == 'o' ? "emoji-fact-brain:" : "emoji-sentiment-brain:"
-  if(/([^\s]+)\s(?:is|are|likes?)(?! not)(?: the)?(?: same)?(?: as)?(?: like)?\s*([^\s]+)/.exec(msg)){
-    if(!_lodash.some(_lodash.map(tagger.tag([RegExp.$2, RegExp.$1]), function(g){return g[1]}), function(x){ return _lodash.includes(["PRP","DT"], x)})){
+  if(/([^\s]+)\s(?:is|are|likes?)(?! not)(?: the)?(?: same)?(?: as)?(?: like)?\s*([^\s]+)$/.exec(msg)){
+    if(!_l.some(_l.map(tagger.tag([RegExp.$2, RegExp.$1]), function(g){return g[1]}), function(x){ return _l.includes(["PRP","DT"], x)})){
       var one = RegExp.$1 //s == "o" ? RegExp.$2 : RegExp.$1
       var two = RegExp.$2 //s == "o" ? RegExp.$1 : RegExp.$2
       // o is fact s is sentiment - l for like vs positive association
@@ -169,13 +169,13 @@ function saveFact(msg, emoji, s, user){
       _client.hget(db_string, s == 'o' ? two : one, function(err, obj){
         _winston2.default.help("READ "+JSON.stringify(obj))
         var value = obj ? parseInt(obj) + 1 : 1
-        _winston2.default.help("Writing "+db_string+"-"+two+"-"+value)
+        _winston2.default.help("Writing "+db_string+" || "+two+" || "+value)
         _client.hset(db_string, two , value, redis.print)
 
       });
     }
-  } else if(/([^\s]+)\s(?:(?:(?:is|are)(?: not))|(?:doesn't\slike)|(?:aren't|isn't))(?: the)?(?: same)?(?: as)?(?: like)?\s*([^\s]+)/.exec(msg)){
-    //!_lodash.some(_lodash.map(tagger.tag([RegExp.$2, RegExp.$1]), function(g){return g[1]}), function(x){ return x == "PRP"})
+  } else if(/([^\s]+)\s(?:(?:(?:is|are)(?: not))|(?:doesn't\slike)|(?:aren't|isn't))(?: the)?(?: same)?(?: as)?(?: like)?\s*([^\s]+)$/.exec(msg)){
+    //!_l.some(_l.map(tagger.tag([RegExp.$2, RegExp.$1]), function(g){return g[1]}), function(x){ return x == "PRP"})
     if(!_lodash(tagger.tag([RegExp.$2, RegExp.$1])).map(g => g[1]).some( x => x == "PRP")){
       var one = RegExp.$1 //s == "o" ? RegExp.$2 : RegExp.$1
       var two = RegExp.$2 //s == "o" ? RegExp.$1 : RegExp.$2
@@ -183,7 +183,7 @@ function saveFact(msg, emoji, s, user){
       _client.hget(db_string, two, function(err, obj){
         _winston2.default.help("READ "+JSON.stringify(obj))
         var value = obj ? parseInt(obj) + 1 : 1
-        _winston2.default.help("Writing "+db_string+" "+value)
+        _winston2.default.help("Writing "+db_string+"|| "+two+" || "+value)
         _client.hset(db_string, two, value, redis.print)
 
       });
@@ -236,25 +236,25 @@ class Bot {
       var reference = {}
       _winston2.default.help("LOOKING FOR "+dbstring)
       _client.keys(dbstring,function(err, r){
-        var all = _lodash.map(r, function(){return _q.defer()});
+        var all = _l.map(r, function(){return _q.defer()});
         r.forEach(function(key){
           _client.hgetall(key, function(err,obj){
             _winston2.default.help("INSPECTING FROM BRAIN "+_util.inspect(obj))
-            var sortedkeys = _lodash.sortBy(Object.keys(obj), e => obj[e])
+            var sortedkeys = _l.sortBy(Object.keys(obj), e => obj[e])
             sortedkeys.forEach( e => reference[e] = obj)
-            var vall = _lodash.map(sortedkeys, e => _this.findword(e))
+            var vall = _l.map(sortedkeys, e => _this.findword(e))
             _q.all(vall).done(function(syns){
-              var syn = _lodash.flatten(syns)
+              var syn = _l.flatten(syns)
               var found_emoji = null;
               var identifier = syn[0];
-              _lodash.keys(_this.emojis).forEach( e => {
-                if(_lodash.includes(syn, e)){
+              _l.keys(_this.emojis).forEach( e => {
+                if(_l.includes(syn, e)){
                   found_emoji = e.pluralizeNoun()
                 }
-                else if(_lodash.includes(syn, e.singularizeNoun())){
+                else if(_l.includes(syn, e.singularizeNoun())){
                   found_emoji = e.singularizeNoun()
                 }
-                else if(_lodash.includes(syn, e.pluralizeNoun())){
+                else if(_l.includes(syn, e.pluralizeNoun())){
                   found_emoji = e.pluralizeNoun()
                 }
               })
@@ -262,13 +262,13 @@ class Bot {
               all[r.indexOf(key)].resolve(found_emoji ? {word: found_emoji, weight: parseInt(reference[identifier][identifier])} : {word: '', weight: 0})
             })
           })})
-        _q.all(_lodash.map(all, p => p.promise)).done(function(x){
-          if(_lodash.isEmpty(x)){
+        _q.all(_l.map(all, p => p.promise)).done(function(x){
+          if(_l.isEmpty(x)){
             deferred.resolve('')
           }
           else{
             _winston2.default.help("READING FROM BRAIN "+_util.inspect(x))
-            var g = _lodash.find(x, {weight: _lodash.max(_lodash.map(x, g => g.weight))}).word;
+            var g = _l.find(x, {weight: _l.max(_l.map(x, g => g.weight))}).word;
             deferred.resolve(g)
           }
         })
@@ -381,8 +381,8 @@ class Bot {
       _winston2.default.verbose('******************** rolled a '+roll+' vs '+( /begin analysis/.exec(msg) ? 10 : this.throttle ));
       msg = msg.replace(/^(?:@gbp:?\s*)?begin analysis/,' ')
       if(should_msg)_winston2.default.input("WRITING for "+msg+"\n\n\n\n");
-      var presynmsgs = _lodash.reject(_lodash.split(msg.replace(/(dicks?|pussy|penis|assholes?|butts?)/,
-                                                                'eggplant'),' '), function(g){return _lodash.includes(['it', 'a', 'i'],g)} || this.isNumeric(g) );
+      var presynmsgs = _l.reject(_l.split(msg.replace(/(dicks?|pussy|penis|assholes?|butts?)/,
+                                                                'eggplant'),' '), function(g){return _l.includes(['it', 'a', 'i'],g)} || this.isNumeric(g) );
 
       _winston2.default.info('******************** MESSAGE SENTIMENT ',_sentiment(msg).score)
       if(_sentiment(msg).score >= 2){
@@ -400,26 +400,26 @@ class Bot {
       }
       if(true){
         var _this = this
-        var promises = _lodash.flatten(_lodash.map(presynmsgs, function(g){ return [_this.findword(g), _this.findwordfrombrain(g)]}))
+        var promises = _l.flatten(_l.map(presynmsgs, function(g){ return [_this.findword(g), _this.findwordfrombrain(g)]}))
         _q.all(promises).done(function(y){
-          var msgs = _lodash.uniq(_lodash.flatten(y))
+          var msgs = _l.uniq(_l.flatten(y))
           _winston2.default.info("MESSAGE", msgs)
-          var scrambledkeys = _lodash.sortBy(_lodash.keys(_this.emojis), function(){return Math.random()});
+          var scrambledkeys = _l.sortBy(_l.keys(_this.emojis), function(){return Math.random()});
           //TODO MERGE brain associations back into associative array?
-          var find = _lodash.find(scrambledkeys,
-                                  function(g){ return _lodash.find(msgs, function(x){return _distance(_natural.PorterStemmer.stem(x),_natural.PorterStemmer.stem(_lodash.lowerCase(g))) >= 0.96})})
+          var find = _l.find(scrambledkeys,
+                                  function(g){ return _l.find(msgs, function(x){return _distance(_natural.PorterStemmer.stem(x),_natural.PorterStemmer.stem(_l.lowerCase(g))) >= 0.96})})
           _winston2.default.trace(`find found - ${find} - ${msg} `)
-          var a = _this.emojis[find];
+          var a = _this.emojis[_l.lowerCase(find)];
           if (a){
             _winston2.default.info('contextual from -- '+msg+' -- '+a);
             if(should_msg)responder(message, a, _this)
             saveFact(msg, find.replace(/\:/g,''), s, message.author.username)
           }
           else if(false){
-            var len = _lodash.keys(_this.emojis).length;
-            var keys = _lodash.keys(_this.emojis);
+            var len = _l.keys(_this.emojis).length;
+            var keys = _l.keys(_this.emojis);
             var g = _this.emojis[keys[Math.floor(Math.random() * len)]]
-            _winston2.default.info('************************* random ',g,' ', _lodash.findKey(_this.emojis, (item) => (item == g)));
+            _winston2.default.info('************************* random ',g,' ', _l.findKey(_this.emojis, (item) => (item == g)));
             if(should_msg)responder(message, g, _this)
           }
         }
