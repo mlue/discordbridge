@@ -135,8 +135,9 @@ for(e in _emojis){
 }
 _emojis = _lodash.pickBy(_emojis, (v, k) => {
   //!/(?:flag_(?!us|en)..:|:on:|:back:)/.exec(k) && !_lodash.includes(_countrylist, k)
-  if(!/(?:flag_(?!us|en)..:|:on:|:back:|^one$|^two$|^three$|^four$|^up$|:do$)/.exec(k)) return true
-  else{_winston2.default.info("OMITTING ",k); return false}
+  if(/(?:flag_(?!us|en)..:|:on:|:back:|^one$|^two$|^three$|^four$|^up$|:do$|^:?no:?$)/.exec(k)){_winston2.default.info("OMITTING ",k); return false}
+  else if(k.length == 2 && /^[a-z:]+$/.exec(k)){_winston2.default.info("OMITTING ",k); return false}
+  else return true
 })
 var post_merge_size = Object.keys(_emojis).length
 
