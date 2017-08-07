@@ -125,6 +125,7 @@ for (var i = 0; i < ekeys.length; i++) {
 _emojis = _l.merge(_emojis, _emojis_old.emoji)
 
 var pre_merge_size = Object.keys(_emojis).length
+
 for(e in _emojis){
   _l.split(e,'_').forEach(g => {
     if(!_emojis[g] && e.length > 2){
@@ -133,10 +134,19 @@ for(e in _emojis){
   })
   _emojis[_emojis[e]] = _emojis[e]
 }
+
+var _holder = {}
+
+for(e in _emojis){
+  _holder[_l.trim(e,':')] = _emojis[e]
+}
+
+_emojis = _holder
+
 _emojis = _l.pickBy(_emojis, (v, k) => {
   //!/(?:flag_(?!us|en)..:|:on:|:back:)/.exec(k) && !_l.includes(_countrylist, k)
-  if(/(?:flag_(?!us|en)..:|:on:|:back:|^:?one:?$|^two$|^three$|^four$|^up$|:do$|^:?no:?$)/.exec(k)){_winston2.default.info("OMITTING ",k); return false}
-  else if(_l.trim(k,':').length == 2 && /^[a-z:]+$/.exec(k)){_winston2.default.info("OMITTING ",k); return false}
+  if(/(?:^flag_(?!us|en|jp|)$|^on$|^back$|^one$|^two$|^three$|^four$|^up$|^do$|^no$)/.exec(k)){_winston2.default.info("OMITTING ",k); return false}
+  else if(_l.trim(k,':').length == 2 && /^[a-z:]+$/.exec(k) && !_l.includes(["tv","ox"],k)){_winston2.default.info("OMITTING ",k); return false}
   else return true
 })
 var post_merge_size = Object.keys(_emojis).length
@@ -176,7 +186,7 @@ function saveFact(msg, emoji, s, user){
     }
   } else if(/([^\s]+)\s(?:(?:(?:is|are)(?: not))|(?:doesn't\slike)|(?:aren't|isn't))(?: the)?(?: same)?(?: as)?(?: like)?\s*([^\s]+)$/.exec(msg)){
     //!_l.some(_l.map(tagger.tag([RegExp.$2, RegExp.$1]), function(g){return g[1]}), function(x){ return x == "PRP"})
-    if(!_lodash(tagger.tag([RegExp.$2, RegExp.$1])).map(g => g[1]).some( x => x == "PRP")){
+    if(!_l(tagger.tag([RegExp.$2, RegExp.$1])).map(g => g[1]).some( x => x == "PRP")){
       var one = RegExp.$1 //s == "o" ? RegExp.$2 : RegExp.$1
       var two = RegExp.$2 //s == "o" ? RegExp.$1 : RegExp.$2
       db_string += s == 'o' ? one+":"+user+":n" : user+":"+one+(/likes/.exec(msg) ? ":d" : ":n");
@@ -245,11 +255,12 @@ class Bot {
             var vall = _l.map(sortedkeys, e => _this.findword(e))
             _q.all(vall).done(function(syns){
               var syn = _l.flatten(syns)
+              _winston2.default.data("CHECKING SYNONYMS FROM "+_util.inspect(syn))
               var found_emoji = null;
               var identifier = syn[0];
               _l.keys(_this.emojis).forEach( e => {
                 if(_l.includes(syn, e)){
-                  found_emoji = e.pluralizeNoun()
+                  found_emoji = e
                 }
                 else if(_l.includes(syn, e.singularizeNoun())){
                   found_emoji = e.singularizeNoun()
@@ -400,20 +411,22 @@ class Bot {
       }
       if(true){
         var _this = this
-        var promises = _l.flatten(_l.map(presynmsgs, function(g){ return [_this.findword(g), _this.findwordfrombrain(g)]}))
+        var promises = _l.flatten(_l.map(presynmsgs, function(g){ return [_this.findwordfrombrain(g), _this.findword(g)]}))
         _q.all(promises).done(function(y){
           var msgs = _l.uniq(_l.flatten(y))
-          _winston2.default.info("MESSAGE", msgs)
+          _winston2.default.info("CANDIDATE KEYS", msgs)
           var scrambledkeys = _l.sortBy(_l.keys(_this.emojis), function(){return Math.random()});
           //TODO MERGE brain associations back into associative array?
           var find = _l.find(scrambledkeys,
-                                  function(g){ return _l.find(msgs, function(x){return _distance(_natural.PorterStemmer.stem(x),_natural.PorterStemmer.stem(_l.lowerCase(g))) >= 0.96})})
+                             function(g){ return _l.find(msgs, function(x){return _distance(_natural.PorterStemmer.stem(_l.lowerCase(x)),_natural.PorterStemmer.stem(_l.lowerCase(g))) >= 0.98})})
           _winston2.default.trace(`find found - ${find} - ${msg} `)
           var a = _this.emojis[_l.lowerCase(find)];
           if (a){
             _winston2.default.info('contextual from -- '+msg+' -- '+a);
             if(should_msg)responder(message, a, _this)
+            _winston2.default.prompt("===================================== END TRANSMISSION ===================================== ")
             saveFact(msg, find.replace(/\:/g,''), s, message.author.username)
+            _winston2.default.prompt("===================================== END FACT SAVE ======================================== ")
           }
           else if(false){
             var len = _l.keys(_this.emojis).length;
