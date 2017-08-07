@@ -5,7 +5,18 @@
 
 /*jslint node: true */
 
+String.prototype.hexDecode = function(){
+  var j;
+  var hexes = this.match(/.{1,4}/g) || [];
+  var back = "";
+  for(j = 0; j<hexes.length; j++) {
+    back += String.fromCharCode(parseInt(hexes[j], 16));
 
+  }
+
+  return back;
+
+}
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -128,7 +139,7 @@ var pre_merge_size = Object.keys(_emojis).length
 
 for(e in _emojis){
   _l.split(e,'_').forEach(g => {
-    if(!_emojis[g] && e.length > 2){
+    if(!_emojis[g] && e.length > 2 && !_l.includes(["americas"], g)){
       _emojis[g] = _emojis[e]
     }
   })
@@ -145,7 +156,7 @@ _emojis = _holder
 
 _emojis = _l.pickBy(_emojis, (v, k) => {
   //!/(?:flag_(?!us|en)..:|:on:|:back:)/.exec(k) && !_l.includes(_countrylist, k)
-  if(/(?:^flag_(?!us|en|jp|)$|^on$|^back$|^one$|^two$|^three$|^four$|^up$|^do$|^no$)/.exec(k)){_winston2.default.info("OMITTING ",k); return false}
+  if(/(?:^flag_(?!us|en|jp)$|^on$|^back$|^one$|^two$|^three$|^four$|^up$|^do$|^no$)/.exec(k)){_winston2.default.info("OMITTING ",k); return false}
   else if(_l.trim(k,':').length == 2 && /^[a-z:]+$/.exec(k) && !_l.includes(["tv","ox"],k)){_winston2.default.info("OMITTING ",k); return false}
   else return true
 })
@@ -419,8 +430,8 @@ class Bot {
           //TODO MERGE brain associations back into associative array?
           var find = _l.find(scrambledkeys,
                              function(g){ return _l.find(msgs, function(x){return _distance(_natural.PorterStemmer.stem(_l.lowerCase(x)),_natural.PorterStemmer.stem(_l.lowerCase(g))) >= 0.98})})
-          _winston2.default.trace(`find found - ${find} - ${msg} `)
-          var a = _this.emojis[_l.lowerCase(find)];
+          var a = _this.emojis[find];
+          _winston2.default.error(`find found - >>>${find}<<< for >>${msg}<< using >>>${a}<<< || code 1 -> ${find} || code 2 ->${'flag_us' == find} `)
           if (a){
             _winston2.default.info('contextual from -- '+msg+' -- '+a);
             if(should_msg)responder(message, a, _this)
