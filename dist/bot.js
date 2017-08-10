@@ -143,7 +143,7 @@ for(e in _emojis){
       _emojis[g] = _emojis[e]
     }
   })
-  //_emojis[_emojis[e]] = _emojis[e]
+  _emojis[_emojis[e]] = _emojis[e]
 }
 
 var _holder = {}
@@ -415,7 +415,7 @@ class Bot {
       if(should_msg)_winston2.default.input("WRITING for "+msg+"\n\n\n\n");
       // var presynmsgs = _l.reject(_l.split(msg.replace(/(dicks?|pussy|penis|assholes?|butts?)/,
       //                                                 'eggplant'),' '), function(g){return _l.includes(['it', 'a', 'i'],g)} || this.isNumeric(g) );
-      var presynmsgs = _l(msg).split(' ').reject( x => {_l.includes(["DT", "TO"],tagger.tag([x])[0][1]) || x.length < 3  }).value()
+      var presynmsgs = _l(msg).split(' ').map( x => x.replace(/^[^a-zA]/)).reject( x => {_l.includes(["DT", "TO"],tagger.tag([x])[0][1]) || x.length < 3  }).value()
 
       _winston2.default.info('******************** MESSAGE SENTIMENT ',_sentiment(msg).score)
       if(_sentiment(msg).score >= 2){
