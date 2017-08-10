@@ -143,7 +143,7 @@ for(e in _emojis){
       _emojis[g] = _emojis[e]
     }
   })
-  _emojis[_emojis[e]] = _emojis[e]
+  //_emojis[_emojis[e]] = _emojis[e]
 }
 
 var _holder = {}
@@ -197,7 +197,7 @@ function saveFact(msg, emoji, s, user){
     }
   } else if(/([^\s]+)\s(?:(?:(?:is|are)(?: not))|(?:doesn't\slike)|(?:aren't|isn't))(?: the)?(?: same)?(?: as)?(?: like)?\s*(?:a)?\s*([^\s]+)$/.exec(msg)){
     //!_l.some(_l.map(tagger.tag([RegExp.$2, RegExp.$1]), function(g){return g[1]}), function(x){ return x == "PRP"})
-    if(!_l(tagger.tag([RegExp.$2, RegExp.$1])).map(g => g[1]).some( x => x == "PRP")){
+    if(!_l.some(_l.map(tagger.tag([RegExp.$2, RegExp.$1]), function(g){return g[1]}), function(x){ return _l.includes(["PRP","DT"], x)})){
       var one = RegExp.$1 //s == "o" ? RegExp.$2 : RegExp.$1
       var two = RegExp.$2 //s == "o" ? RegExp.$1 : RegExp.$2
       db_string += s == 'o' ? one+":"+user+":n" : user+":"+one+(/likes/.exec(msg) ? ":d" : ":n");
@@ -238,13 +238,15 @@ class Bot {
     }
 
     this.findword = function(g,jj){
-       var deferred = _q.defer();
+      var deferred = _q.defer();
       var msgs = []
+      var timer = Date.now()
       wordnet.lookup(g, function(results) {
         results.forEach(function(result) {
           msgs.push(...result.synonyms)
         });
         deferred.resolve([g,...msgs]);
+         _winston2.default.info(`Time elapsed for findword for >>${g}<<`, Date.now() - timer)
       });
       return deferred.promise;}
 
@@ -254,9 +256,11 @@ class Bot {
       var msg = ''
       var dbstring = "emoji-fact-brain:"+g+":*:p"
       var _this = this;
+      var timer = Date.now()
       var reference = {}
       _winston2.default.help("LOOKING FOR "+dbstring)
       _client.keys(dbstring,function(err, r){
+        // r = _l.filter(r, j => _l.includes(["NN"],tagger(j)))
         var all = _l.map(r, function(){return _q.defer()});
         r.forEach(function(key){
           _client.hgetall(key, function(err,obj){
@@ -285,13 +289,18 @@ class Bot {
             })
           })})
         _q.all(_l.map(all, p => p.promise)).done(function(x){
+          _winston2.default.info(`Time elapsed for findwordfrombrain for >>${g}<<`, Date.now() - timer)
           if(_l.isEmpty(x)){
             deferred.resolve('')
           }
           else{
             _winston2.default.help("READING FROM BRAIN "+_util.inspect(x))
-            var g = _l.find(x, {weight: _l.max(_l.map(x, g => g.weight))}).word;
-            deferred.resolve(g)
+            // x = _l.reduce(x, function(result, value){
+            //   (result[key] || (result[key] = 1)).push(key);
+            //   return result;
+            // },{})
+            var gg = _l.find(x, {weight: _l.max(_l.map(x, gg => gg.weight))}).word;
+            deferred.resolve(gg)
           }
         })
       })
@@ -395,6 +404,7 @@ class Bot {
     var l = (message, s, user = null) => {
       // Ignore bot messages and people leaving/joining
       if(s != 't')this.sendToIRC(message);
+      var timer = Date.now()
       var roll = Math.random() * 100;
       this.throttle -= (0.25 + ((new Date().getTime()/1000 - this.last_msg_time) * 1/72));
       this.last_msg_time = new Date().getTime()/1000;
@@ -403,8 +413,9 @@ class Bot {
       _winston2.default.verbose('******************** rolled a '+roll+' vs '+( /begin analysis/.exec(msg) ? 10 : this.throttle ));
       msg = msg.replace(/^(?:@gbp:?\s*)?begin analysis/,' ')
       if(should_msg)_winston2.default.input("WRITING for "+msg+"\n\n\n\n");
-      var presynmsgs = _l.reject(_l.split(msg.replace(/(dicks?|pussy|penis|assholes?|butts?)/,
-                                                                'eggplant'),' '), function(g){return _l.includes(['it', 'a', 'i'],g)} || this.isNumeric(g) );
+      // var presynmsgs = _l.reject(_l.split(msg.replace(/(dicks?|pussy|penis|assholes?|butts?)/,
+      //                                                 'eggplant'),' '), function(g){return _l.includes(['it', 'a', 'i'],g)} || this.isNumeric(g) );
+      var presynmsgs = _l(msg).split(' ').reject( x => _l.includes(["DT", "TO"],tagger.tag([x])[0][1])).value()
 
       _winston2.default.info('******************** MESSAGE SENTIMENT ',_sentiment(msg).score)
       if(_sentiment(msg).score >= 2){
@@ -428,8 +439,7 @@ class Bot {
           _winston2.default.info("CANDIDATE KEYS", msgs)
           var scrambledkeys = _l.sortBy(_l.keys(_this.emojis), function(){return Math.random()});
           //TODO MERGE brain associations back into associative array?
-          var find = _l.find(scrambledkeys,
-                             function(g){ return _l.find(msgs, function(x){return _distance(_natural.PorterStemmer.stem(_l.lowerCase(x)),_natural.PorterStemmer.stem(_l.lowerCase(g))) >= 0.98})})
+          var find = _l.intersection(scrambledkeys,msgs)[0]
           var a = _this.emojis[find];
           _winston2.default.error(`find found - >>>${find}<<< for >>${msg}<< using >>>${a}<<< || code 1 -> ${find} || code 2 ->${'flag_us' == find} `)
           if (a){
@@ -438,6 +448,8 @@ class Bot {
             _winston2.default.prompt("===================================== END TRANSMISSION ===================================== ")
             saveFact(msg, find.replace(/\:/g,''), s, message.author.username)
             _winston2.default.prompt("===================================== END FACT SAVE ======================================== ")
+            _winston2.default.info("Time elapsed for find", Date.now() - timer)
+
           }
           else if(false){
             var len = _l.keys(_this.emojis).length;
