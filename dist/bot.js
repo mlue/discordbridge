@@ -181,7 +181,7 @@ function responder(m,a,obj){
 function saveFact(msg, emoji, s, user){
   //I wanna encode the source with the fact to build a profile? and build a knowledge of knowldge
   var db_string = s == 'o' ? "emoji-fact-brain:" : "emoji-sentiment-brain:"
-  if(/([^\s]+)\s(?:is|are|likes?)(?! not)(?: the)?(?: same)?(?: as)?(?: like)?\s*([^\s]+)$/.exec(msg)){
+  if(/([^\s]+)\s(?:is|are|likes?)(?! not)(?: the)?(?: same)?(?: as)?(?: like)?\s*(?:a)?\s*([^\s]+)$/.exec(msg)){
     if(!_l.some(_l.map(tagger.tag([RegExp.$2, RegExp.$1]), function(g){return g[1]}), function(x){ return _l.includes(["PRP","DT"], x)})){
       var one = RegExp.$1 //s == "o" ? RegExp.$2 : RegExp.$1
       var two = RegExp.$2 //s == "o" ? RegExp.$1 : RegExp.$2
@@ -190,21 +190,21 @@ function saveFact(msg, emoji, s, user){
       _client.hget(db_string, s == 'o' ? two : one, function(err, obj){
         _winston2.default.help("READ "+JSON.stringify(obj))
         var value = obj ? parseInt(obj) + 1 : 1
-        _winston2.default.help("Writing "+db_string+" || "+two+" || "+value)
+        _winston2.default.info("WRITING TO DB "+db_string+" || "+two+" || "+value)
         _client.hset(db_string, two , value, redis.print)
 
       });
     }
-  } else if(/([^\s]+)\s(?:(?:(?:is|are)(?: not))|(?:doesn't\slike)|(?:aren't|isn't))(?: the)?(?: same)?(?: as)?(?: like)?\s*([^\s]+)$/.exec(msg)){
+  } else if(/([^\s]+)\s(?:(?:(?:is|are)(?: not))|(?:doesn't\slike)|(?:aren't|isn't))(?: the)?(?: same)?(?: as)?(?: like)?\s*(?:a)?\s*([^\s]+)$/.exec(msg)){
     //!_l.some(_l.map(tagger.tag([RegExp.$2, RegExp.$1]), function(g){return g[1]}), function(x){ return x == "PRP"})
     if(!_l(tagger.tag([RegExp.$2, RegExp.$1])).map(g => g[1]).some( x => x == "PRP")){
       var one = RegExp.$1 //s == "o" ? RegExp.$2 : RegExp.$1
       var two = RegExp.$2 //s == "o" ? RegExp.$1 : RegExp.$2
       db_string += s == 'o' ? one+":"+user+":n" : user+":"+one+(/likes/.exec(msg) ? ":d" : ":n");
       _client.hget(db_string, two, function(err, obj){
-        _winston2.default.help("READ "+JSON.stringify(obj))
+        _winston2.default.info("READ "+JSON.stringify(obj))
         var value = obj ? parseInt(obj) + 1 : 1
-        _winston2.default.help("Writing "+db_string+"|| "+two+" || "+value)
+        _winston2.default.info("WRITING TO DB "+db_string+"|| "+two+" || "+value)
         _client.hset(db_string, two, value, redis.print)
 
       });
