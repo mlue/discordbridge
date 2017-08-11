@@ -469,7 +469,6 @@ class Bot {
     }
     var that = this;
     this.discord.on('message', message => {
-      _winston2.default.trace('timestamp', _util.inspect(message))
       var resp =  godot.play(message)
       var timer = Math.random()* 50000
       if(resp && message.author.username == 'echo')setTimeout(() => {_winston2.default.trace('pollying in ', timer/1000); that.discord.channels.get('201453750303326209').sendMessage(resp)},timer)
