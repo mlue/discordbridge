@@ -15,7 +15,7 @@ bot.on('ready', function() {
 bot.on('message', function(user, userID, channelID, message, event) {
   console.log('%s %s %s', channelID, message, userID)
   var resp =  g.play(message)
-  var delay = Math.random()* 5000
+  var delay = Math.random()* 30000
   if(resp && userID != bot.id){console.log('going to respond to resp in %s seconds',delay/1000), setTimeout(() => {
     bot.sendMessage({
       to: '201453750303326209',
