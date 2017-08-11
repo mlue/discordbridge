@@ -26,6 +26,9 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 
 var _emojis = {};
 
+var godotcon = new require('./godot')
+var godot = new godotcon.Godot()
+
 var ekeys = require("emojis-keywords"),  evalues = require("emojis-list");
 
 var redis = require('redis')
@@ -160,6 +163,9 @@ _emojis = _l.pickBy(_emojis, (v, k) => {
   else if(_l.trim(k,':').length == 2 && /^[a-z:]+$/.exec(k) && !_l.includes(["tv","ox"],k)){_winston2.default.info("OMITTING ",k); return false}
   else return true
 })
+
+delete _emojis['one']
+
 var post_merge_size = Object.keys(_emojis).length
 
 var fs = require('fs');
@@ -415,7 +421,7 @@ class Bot {
       if(should_msg)_winston2.default.input("WRITING for "+msg+"\n\n\n\n");
       // var presynmsgs = _l.reject(_l.split(msg.replace(/(dicks?|pussy|penis|assholes?|butts?)/,
       //                                                 'eggplant'),' '), function(g){return _l.includes(['it', 'a', 'i'],g)} || this.isNumeric(g) );
-      var presynmsgs = _l(msg).split(' ').reject( x => {return _l.includes(["DT", "TO"],tagger.tag([x])[0][1]) || (x.length < 3 && x.match(/^[a-zA-Z0-9]+$/)) }).value()
+      var presynmsgs = _l(msg).split(' ').reject( x => {return _l.includes(["DT", "TO"],tagger.tag([x])[0][1]) || (x.length < 2 && x.match(/^[a-zA-Z0-9]+$/)) }).value()
 
       _winston2.default.info('******************** MESSAGE SENTIMENT ',_sentiment(msg).score)
       if(_sentiment(msg).score >= 2){
@@ -461,9 +467,12 @@ class Bot {
         }
                              )}
     }
-
+    var that = this;
     this.discord.on('message', message => {
-      _winston2.default.trace('timestamp')
+      _winston2.default.trace('timestamp', _util.inspect(message))
+      var resp =  godot.play(message)
+      var timer = Math.random()* 50000
+      if(resp && message.author.username == 'echo')setTimeout(() => {_winston2.default.trace('pollying in ', timer/1000); that.discord.channels.get('201453750303326209').sendMessage(resp)},timer)
       l(message, 'o')
     });
 
