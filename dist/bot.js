@@ -431,7 +431,7 @@ class Bot {
         _winston2.default.info('******************** negative '+negative_response)
         saveFact(msg, negative_response,'t', message.author.username)
       }
-      if(true){
+      if(!_l.isEmpty(presynmsgs)){
         var _this = this
         var promises = _l.flatten(_l.map(presynmsgs, function(g){ return [_this.findwordfrombrain(g), _this.findword(g)]}))
         _q.all(promises).done(function(y){
