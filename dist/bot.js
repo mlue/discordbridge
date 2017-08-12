@@ -471,18 +471,18 @@ class Bot {
     }
     var that = this;
     this.discord.on('message', message => {
-      _winston2.default.debug('message -> ', _util.inspect(message))
-      if(message.content =~ /^gimme a script/){
+      if(message.content.match(/^gimme a script/) && message.author.username != 'gbp'){
         message.channel.startTyping()
         film.getPlot().then((content) => {
           message.reply(content, {split: true})
           message.stopTyping();
         })
       }
-      var resp =  godot.play(message)
-      var timer = Math.random()* 50000
-      if(resp && message.author.username == 'echo')setTimeout(() => {_winston2.default.trace('pollying in ', timer/1000); that.discord.channels.get('201453750303326209').sendMessage(resp)},timer)
-      l(message, 'o')
+      else l(message, 'o')
+
+      // var resp =  godot.play(message)
+      // var timer = Math.random()* 50000
+      // if(resp && message.author.username == 'echo')setTimeout(() => {_winston2.default.trace('pollying in ', timer/1000); that.discord.channels.get('201453750303326209').sendMessage(resp)},timer)
     });
 
     this.discord.on('messageReactionAdd', (messageReaction, user) => {
