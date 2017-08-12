@@ -475,7 +475,7 @@ class Bot {
         message.channel.startTyping()
         film.getPlot().then((content) => {
           message.reply(content, {split: true})
-          message.stopTyping();
+          message.channel.stopTyping();
         })
       }
       else l(message, 'o')
