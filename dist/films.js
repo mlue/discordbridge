@@ -22,7 +22,7 @@ class Films {
         var parsedPage = c.load(body)
         console.log("parsing "+parsedPage('title').text())
         var hasPlot = parsedPage('#Plot')
-        if(!hasPlot.html()){
+        if(!hasPlot.html() && !parsedPage('#Plot').parent().next().text().match(/This section is empty\./)){
           setTimeout(() => {
             findPlot()
           },2000)}

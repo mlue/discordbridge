@@ -1,25 +1,35 @@
-var Discord = require('discord.io');
+var Discord = require('discord.js');
 
-var bot = new Discord.Client({
-  token: "MzQ1NTgyNzQ2OTQ2NzY0ODAw.DG9Yiw.5cYlQnqJGmvjoT8hyeLRz7gT1bY",
-  autorun: true
-});
+var bot = new Discord.Client({autoReconnect: true});
 
-var godot = require('./godot')
-var g = new godot.Godot()
 bot.on('ready', function() {
-  console.log('Logged in as %s - %s\n', bot.username, bot.id);
+  console.log('logged in')
 
 });
 
-bot.on('message', function(user, userID, channelID, message, event) {
-  console.log('%s %s %s', channelID, message, userID)
-  var resp =  g.play(message)
+function askForScript() {
+  bot.channels.find( c => c.id == '345940851412828161').send('gimme a script')
+}
+
+(function loop() {
+  var rand = Math.round(Math.random() * (5000000)) + 500000;
+  setTimeout(function() {
+    askForScript();
+    loop();
+  }, rand);
+}());
+
+
+bot.on('message', function(message) {
   var delay = Math.random()* 30000
-  if(resp && userID != bot.id){console.log('going to respond to resp in %s seconds',delay/1000), setTimeout(() => {
-    bot.sendMessage({
-      to: '345940851412828161',
-      message: resp
-    });
-  }, delay)}
+  if(message.author.id != bot.id && message.channel.id == '345940851412828161' && message.author.username == 'gbp' && message.content.match(/how about this one:/)){
+    message.channel.startTyping()
+    setTimeout(() => {
+      message.react(Math.round(Math.random() * 10) ? '+1': '-1')
+      message.channel.stopTyping();
+    }), 5000
+  }
+  // if(resp && userID != bot.id){console.log('going to respond to resp in %s seconds',delay/1000), setTimeout(() => {
+  // }, delay)}
 })
+bot.login("MzQ1NTgyNzQ2OTQ2NzY0ODAw.DG9Yiw.5cYlQnqJGmvjoT8hyeLRz7gT1bY").then(askForScript)
