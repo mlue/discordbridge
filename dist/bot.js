@@ -28,7 +28,8 @@ var _emojis = {};
 
 var godotcon = new require('./godot')
 var godot = new godotcon.Godot()
-var film = new require('./films').film()
+var filmcon = new require('./films')
+var film = new filmcon.film()
 
 var ekeys = require("emojis-keywords"),  evalues = require("emojis-list");
 
@@ -473,7 +474,7 @@ class Bot {
       _winston2.default.debug('message -> ', _util.inspect(message))
       if(message.content =~ /^gimme a script/){
         message.channel.startTyping()
-        film.getScript().then((content) => {
+        film.getPlot().then((content) => {
           message.reply(content, {split: true})
           message.stopTyping();
         })

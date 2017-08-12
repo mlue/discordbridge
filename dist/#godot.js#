@@ -1,0 +1,25 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+class Godot {
+  constructor(options){
+    this.script = {
+      'Why do you always wear mourning?': "I dress in black to match my life. I am unhappy.",
+      'hello polly': "Why should you be unhappy? [Thinking it over] I
+don't understand it. You are healthy, and though your father is
+not rich, he has a good competency. My life is far harder than
+yours. I only have twenty-three roubles a month to live on, but I
+don't wear mourning."
+    }
+
+  }
+
+  play(f){
+    return this.script[f]
+  }
+}
+
+exports.Godot = Godot
