@@ -28,6 +28,7 @@ var _emojis = {};
 
 var godotcon = new require('./godot')
 var godot = new godotcon.Godot()
+var film = new require('./films').film()
 
 var ekeys = require("emojis-keywords"),  evalues = require("emojis-list");
 
@@ -469,6 +470,14 @@ class Bot {
     }
     var that = this;
     this.discord.on('message', message => {
+      _winston2.default.debug('message -> ', _util.inspect(message))
+      if(message.content =~ /^gimme a script/){
+        message.channel.startTyping()
+        film.getScript().then((content) => {
+          message.reply(content, {split: true})
+          message.stopTyping();
+        })
+      }
       var resp =  godot.play(message)
       var timer = Math.random()* 50000
       if(resp && message.author.username == 'echo')setTimeout(() => {_winston2.default.trace('pollying in ', timer/1000); that.discord.channels.get('201453750303326209').sendMessage(resp)},timer)

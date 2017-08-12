@@ -18,7 +18,7 @@ bot.on('message', function(user, userID, channelID, message, event) {
   var delay = Math.random()* 30000
   if(resp && userID != bot.id){console.log('going to respond to resp in %s seconds',delay/1000), setTimeout(() => {
     bot.sendMessage({
-      to: '201453750303326209',
+      to: '345940851412828161',
       message: resp
     });
   }, delay)}
