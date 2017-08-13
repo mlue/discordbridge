@@ -34,16 +34,18 @@ function askForScript() {
   }, rand);
 }());
 
-function startStream(){
-  client.stream('statuses/filter', {track: 'artificialintelligence'},  function(stream) {
+function startStream(s){
+  client.stream('statuses/filter', {track: s},  function(stream) {
     stream.on('data', function(tweet) {
-      var embed = new Discord.RichEmbed()
-          .setColor("#"+tweet.user.profile_background_color)
-          .setTimestamp(new Date(tweet.created_at))
-          .setThumbnail(tweet.user.profile_image_url)
-          .setAuthor(tweet.user.username)
-          .setTitle(tweet.text)
-      bot.channels.find( c => c.id == '345940851412828161').send({embed}).catch(e => console.log(e));
+      if (Math.random() > 0.85 || tweet.retweeted_status.retweet_count > 5000){
+        var embed = new Discord.RichEmbed()
+            .setColor("#"+tweet.user.profile_background_color)
+            .setTimestamp(new Date(tweet.created_at))
+            .setThumbnail(tweet.user.profile_image_url)
+            .setAuthor(tweet.user.name)
+            .setTitle(tweet.text)
+        bot.channels.find( c => c.id == '345940851412828161').send({embed}).catch(e => console.log(e));
+      }
     })
   });
 }
@@ -67,4 +69,4 @@ bot.on('message', function(message) {
   // if(resp && userID != bot.id){console.log('going to respond to resp in %s seconds',delay/1000), setTimeout(() => {
   // }, delay)}
 })
-bot.login(process.env.SECRET).then(() => {startStream(); askForScript(); emojis = bot.guilds.first().emojis})
+bot.login(process.env.SECRET).then(() => {startStream('artificialintelligence');startStream('cryptocurrency'); askForScript(); emojis = bot.guilds.first().emojis})

@@ -423,7 +423,7 @@ class Bot {
       if(should_msg)_winston2.default.input("WRITING for "+msg+"\n\n\n\n");
       // var presynmsgs = _l.reject(_l.split(msg.replace(/(dicks?|pussy|penis|assholes?|butts?)/,
       //                                                 'eggplant'),' '), function(g){return _l.includes(['it', 'a', 'i'],g)} || this.isNumeric(g) );
-      var presynmsgs = _l(msg).lowerCase().split(' ').reject( x => {return _l.isEmpty(_l.trim(x)) || _l.includes(["DT", "TO"],tagger.tag([x])[0][1]) || (x.length < 2 && x.match(/^[a-zA-Z0-9]+$/)) }).uniq().value()
+      var presynmsgs = _l(_l(msg).lowerCase().split(' ')).reject( x => {return _l.isEmpty(_l.trim(x)) || _l.includes(["DT", "TO"],tagger.tag([x])[0][1]) || (x.length < 2 && x.match(/^[a-zA-Z0-9]+$/)) }).uniq().value()
 
       _winston2.default.info('******************** MESSAGE SENTIMENT ',_sentiment(msg).score)
       if(_sentiment(msg).score >= 4){
@@ -436,7 +436,7 @@ class Bot {
         //responder(msg, negative_response, this)
         saveFact(msg, negative_response,'t', message.author.username)
       }
-      if(!_l.isEmpty(presynmsgs)){
+      if(!_l.isEmpty(presynmsgs) && presynmsgs.length < 90){
         var _this = this
         var cache = {}
         var promises = _l.flatten(_l.map(presynmsgs, function(g){ return [_this.findwordfrombrain(g, cache), _this.findword(g,cache)]}))
