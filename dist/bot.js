@@ -267,7 +267,7 @@ class Bot {
         r.forEach(function(key){
           _client.hgetall(key, function(err,obj){
             _winston2.default.help("INSPECTING FROM BRAIN "+_util.inspect(obj))
-            var sortedkeys = _l.sortBy(Object.keys(obj), e => obj[e])
+            var sortedkeys = _l.reject(_l.sortBy(Object.keys(obj), e => obj[e]), sk => _l.isEmpty(_l.trim(sk)))
             sortedkeys.forEach( e => reference[e] = obj)
             var vall = _l.map(sortedkeys, e => {
               if(cache[e]){
@@ -298,7 +298,7 @@ class Bot {
           })})
         _q.all(_l.map(all, p => p.promise)).done(function(x){
           _winston2.default.info(`Time elapsed for findwordfrombrain for >>${g}<<`, Date.now() - timer)
-          if(_l.isEmpty(x)){
+          if(_l.isEmpty(_l.trim(x))){
             deferred.resolve('')
           }
           else{
@@ -423,7 +423,7 @@ class Bot {
       if(should_msg)_winston2.default.input("WRITING for "+msg+"\n\n\n\n");
       // var presynmsgs = _l.reject(_l.split(msg.replace(/(dicks?|pussy|penis|assholes?|butts?)/,
       //                                                 'eggplant'),' '), function(g){return _l.includes(['it', 'a', 'i'],g)} || this.isNumeric(g) );
-      var presynmsgs = _l(msg).split(' ').reject( x => {return _l.includes(["DT", "TO"],tagger.tag([x])[0][1]) || (x.length < 2 && x.match(/^[a-zA-Z0-9]+$/)) }).uniq().value()
+      var presynmsgs = _l(msg).lowerCase().split(' ').reject( x => {return _l.isEmpty(_l.trim(x)) || _l.includes(["DT", "TO"],tagger.tag([x])[0][1]) || (x.length < 2 && x.match(/^[a-zA-Z0-9]+$/)) }).uniq().value()
 
       _winston2.default.info('******************** MESSAGE SENTIMENT ',_sentiment(msg).score)
       if(_sentiment(msg).score >= 4){
@@ -439,7 +439,7 @@ class Bot {
       if(!_l.isEmpty(presynmsgs)){
         var _this = this
         var cache = {}
-        var promises = _l.flatten(_l.map(presynmsgs, function(g){ return [_this.findwordfrombrain(_l.lowerCase(g), cache), _this.findword(_l.lowerCase(g),cache)]}))
+        var promises = _l.flatten(_l.map(presynmsgs, function(g){ return [_this.findwordfrombrain(g, cache), _this.findword(g,cache)]}))
         _q.all(promises).done(function(y){
           var msgs = _l.uniq(_l.flatten(y))
           _winston2.default.info("CANDIDATE KEYS", msgs)
