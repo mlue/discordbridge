@@ -49,6 +49,7 @@ function startStream(s){
             .addField("location", tweet.user.location, true)
             .addField("retweets", tweet.retweet_count, true)
             .addFooter(tweet.user.screen_name)
+            .setURL(`https://twitter.com/${tweet.user.screen_name}/status/${tweet.id_str}`)
         bot.channels.find( c => c.id == '345940851412828161').send({embed}).catch(e => console.log(e));
       }
     })
