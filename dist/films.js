@@ -32,7 +32,7 @@ class Films {
           setTimeout(() => {
             findPlot()
           },2000)}
-        else found.resolve({title: parsedPage('title').text().replace(/Wikipedia/),body: text+"\n ~fin~"})
+        else found.resolve({title: parsedPage('title').text().replace(/Wikipedia/,''),body: text+"\n ~fin~"})
       })
     }
     findPlot()

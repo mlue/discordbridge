@@ -274,7 +274,7 @@ class Bot {
                 _winston2.default.info(`Found >>${e}<< in cache`)
                 return _q.resolve(cache[e])
               }
-              else return _this.findword(e)
+              else return _this.findword(e, cache)
             })
             _q.all(vall).done(function(syns){
               var syn = _l.flatten(syns)
