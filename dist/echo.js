@@ -2,6 +2,8 @@ var Discord = require('discord.js');
 
 var bot = new Discord.Client({autoReconnect: true});
 
+var reactions = ['🤷','👍': '👎']
+
 bot.on('ready', function() {
   console.log('logged in')
 
@@ -25,7 +27,7 @@ bot.on('message', function(message) {
   if(message.author.id != bot.id && message.channel.id == '345940851412828161' && message.author.username == 'gbp' && message.content.match(/how about this one:/)){
     message.channel.startTyping()
     setTimeout(() => {
-      message.react(Math.round(Math.random() * 10) ? ':+1:': ':-1:')
+      message.react(reactions[Math.floor(Math.random() * reactions.length)])
       message.channel.stopTyping();
     }), 5000
   }
