@@ -2,7 +2,7 @@ var Discord = require('discord.js');
 
 var bot = new Discord.Client({autoReconnect: true});
 
-var reactions = ['🤷','👍': '👎']
+var reactions = ['🤷','👍', '👎']
 
 bot.on('ready', function() {
   console.log('logged in')
