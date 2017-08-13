@@ -1,9 +1,6 @@
 var Discord = require('discord.js');
 var nlp = require('compromise');
-<<<<<<< HEAD
 var _l = require('lodash')
-
-=======
 var twitter = require('twitter')
 var client = new Twitter({
   consumer_key: process.env.consumer_key,
@@ -11,7 +8,6 @@ var client = new Twitter({
   access_token_key: process.env.access_token_key,
   access_token_secret: process.env.access_token_secret
 });
->>>>>>> d64127762d5a7da232ef777973505caf18edf141
 var bot = new Discord.Client({autoReconnect: true});
 
 //var reactions = ['sounds interesting','that one sucks', "i'd watch it", "maybe not", "for real?", "lol no", "come on man"]

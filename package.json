@@ -72,6 +72,7 @@
     "sentiment": "^4.0.0",
     "simple-markdown": "^0.2.1",
     "strip-json-comments": "2.0.1",
+    "twitter": "^1.7.1",
     "winston": "2.3.1",
     "wordnet-db": "^3.1.4"
   },
