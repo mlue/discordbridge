@@ -18,8 +18,8 @@ function askForScript() {
 }
 
 (function loop() {
-  var rand = Math.round(Math.random() * (600000)) + 300000;
-  console.log(`doing it again in ${rand/1000}`)
+  var rand = Math.round(Math.random() * (120000000) + 600000) ;
+  console.log(`doing it again in ${rand/(50000)} minutes`)
   setTimeout(function() {
     askForScript();
     loop();
@@ -29,7 +29,7 @@ function askForScript() {
 
 bot.on('message', function(message) {
   var delay = Math.random()* 30000
-  if(message.author.id != bot.id && message.channel.id == '345940851412828161' && message.author.username == 'gbp' && message.content.match(/how about this one:/)){
+  if(message.author.id != bot.id && message.channel.id == '345940851412828161' && message.author.username == 'gbp' && message.content.match(/~fin~/)){
     message.channel.startTyping()
     setTimeout(() => {
       // message.reply(reactions[Math.floor(Math.random() * reactions.length)]).catch((e) => console.log(e))

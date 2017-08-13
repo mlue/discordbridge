@@ -22,12 +22,17 @@ class Films {
         var parsedPage = c.load(body)
         console.log("parsing "+parsedPage('title').text())
         var hasPlot = parsedPage('#Plot')
-        var text = parsedPage('#Plot').parent().next().text()
-        if(!hasPlot.html() || text.match(/This section is empty\./) || text.match(/This article's plot summary may be too long or excessively detailed/) || text.length < 58){
+        var textNodes = parsedPage('#Plot').parent().next()
+        var text = ''
+        while(textNodes.is('p')){
+          text += textNodes.text()+"\n\n"
+          textNodes = textNodes.next()
+        }
+        if(!hasPlot.html() || text.length < 90 ){
           setTimeout(() => {
             findPlot()
           },2000)}
-        else found.resolve(parsedPage('#Plot').parent().next().text())
+        else found.resolve({title: parsedPage('title').text(),body: text+"\n ~fin~"})
       })
     }
     findPlot()
