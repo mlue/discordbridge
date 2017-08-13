@@ -474,7 +474,7 @@ class Bot {
       if(message.content.match(/^gimme a script/) && message.author.username != 'gbp'){
         message.channel.startTyping()
         film.getPlot().then((content) => {
-          message.reply('how about this one: '+content, {split: {maxLength: 1950, char: '...'}})
+          message.channel.send('how about this one: '+content, {split: {maxLength: 1950, char: '...'}})
           message.channel.stopTyping();
         })
       }

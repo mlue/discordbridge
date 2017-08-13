@@ -3,7 +3,7 @@ var Discord = require('discord.js');
 var bot = new Discord.Client({autoReconnect: true});
 
 //var reactions = ['sounds interesting','that one sucks', "i'd watch it", "maybe not", "for real?", "lol no", "come on man"]
- 
+
 var reactions = ["🤷","👍", "👎"]
 
 var emojis = null;
@@ -41,4 +41,4 @@ bot.on('message', function(message) {
   // if(resp && userID != bot.id){console.log('going to respond to resp in %s seconds',delay/1000), setTimeout(() => {
   // }, delay)}
 })
-bot.login("MzQ1NTgyNzQ2OTQ2NzY0ODAw.DG9Yiw.5cYlQnqJGmvjoT8hyeLRz7gT1bY").then(() => {askForScript(); emojis = bot.guilds.first().emojis})
+bot.login(process.env.SECRET).then(() => {askForScript(); emojis = bot.guilds.first().emojis})
