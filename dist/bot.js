@@ -179,8 +179,8 @@ function saveFact(msg, emoji, s, user){
   var db_string = s == 'o' ? "emoji-fact-brain:" : "emoji-sentiment-brain:"
   if(/([^\s]+)\s(?:is|are|likes?)(?! not)(?: the)?(?: same)?(?: as)?(?: like)?\s*(?:a)?\s*([^\s]+)$/.exec(msg)){
     if(!_l.some(_l.map(tagger.tag([RegExp.$2, RegExp.$1]), function(g){return g[1]}), function(x){ return _l.includes(["PRP","DT"], x)})){
-      var one = RegExp.$1 //s == "o" ? RegExp.$2 : RegExp.$1
-      var two = RegExp.$2 //s == "o" ? RegExp.$1 : RegExp.$2
+      var one = _l.lowerCase(RegExp.$1) //s == "o" ? RegExp.$2 : RegExp.$1
+      var two = _l.lowerCase(RegExp.$2) //s == "o" ? RegExp.$1 : RegExp.$2
       // o is fact s is sentiment - l for like vs positive association
       db_string += s == 'o' ? one+":"+user+":p" : user+":"+one+(/likes/.exec(msg) ? ":l" : ":p");
       _client.hget(db_string, s == 'o' ? two : one, function(err, obj){
@@ -194,8 +194,8 @@ function saveFact(msg, emoji, s, user){
   } else if(/([^\s]+)\s(?:(?:(?:is|are)(?: not))|(?:doesn't\slike)|(?:aren't|isn't))(?: the)?(?: same)?(?: as)?(?: like)?\s*(?:a)?\s*([^\s]+)$/.exec(msg)){
     //!_l.some(_l.map(tagger.tag([RegExp.$2, RegExp.$1]), function(g){return g[1]}), function(x){ return x == "PRP"})
     if(!_l.some(_l.map(tagger.tag([RegExp.$2, RegExp.$1]), function(g){return g[1]}), function(x){ return _l.includes(["PRP","DT"], x)})){
-      var one = RegExp.$1 //s == "o" ? RegExp.$2 : RegExp.$1
-      var two = RegExp.$2 //s == "o" ? RegExp.$1 : RegExp.$2
+      var one = _l.lowerCase(RegExp.$1) //s == "o" ? RegExp.$2 : RegExp.$1
+      var two = _l.lowerCase(RegExp.$2) //s == "o" ? RegExp.$1 : RegExp.$2
       db_string += s == 'o' ? one+":"+user+":n" : user+":"+one+(/likes/.exec(msg) ? ":d" : ":n");
       _client.hget(db_string, two, function(err, obj){
         _winston2.default.info("READ "+JSON.stringify(obj))
@@ -439,7 +439,7 @@ class Bot {
       if(!_l.isEmpty(presynmsgs)){
         var _this = this
         var cache = {}
-        var promises = _l.flatten(_l.map(presynmsgs, function(g){ return [_this.findwordfrombrain(g, cache), _this.findword(g,cache)]}))
+        var promises = _l.flatten(_l.map(presynmsgs, function(g){ return [_this.findwordfrombrain(_l.lowerCase(g), cache), _this.findword(_l.lowerCase(g),cache)]}))
         _q.all(promises).done(function(y){
           var msgs = _l.uniq(_l.flatten(y))
           _winston2.default.info("CANDIDATE KEYS", msgs)
