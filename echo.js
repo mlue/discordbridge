@@ -10,6 +10,8 @@ var client = new Twitter({
 });
 var bot = new Discord.Client({autoReconnect: true});
 
+var tomato = ['jejune','pretentious', 'meh', "wouldn't see it in theatres", "first-rate", "insightful", "clever", "charming", "comical", "charismatic", "enjoyable", "uproarious", "original", "tender", "hilarious", "absorbing", "sensitive", "riveting", "intriguing"]
+
 //var reactions = ['sounds interesting','that one sucks', "i'd watch it", "maybe not", "for real?", "lol no", "come on man"]
 
 var reactions = ["🤷","👍", "👎"]
@@ -62,7 +64,7 @@ bot.on('message', function(message) {
       // message.reply(reactions[Math.floor(Math.random() * reactions.length)]).catch((e) => console.log(e))
       message.react(reactions[Math.floor(Math.random() * reactions.length)]).catch((e) => console.log(e))
       var critiques = [`I'm not sure about ${pro}`, `${pro} was definitely unfair to ${sup}`, `Should ${pro} end up happy? What about ${sup}?`, `Should ${pro} end up happy? ${sup} was a shit`, `I don't understand ${pro}`, `${pro} didn't deserve that`, `This story makes no sense to me`, `Is this nonsense?`, `I guess the takeaway is that, in life people like ${pro} take advantage of people like ${sup}`, `What does what happened to ${pro} say about anything?`, `What could ${pro} represent in relation to ${sup}`]
-      if(message.content.length > 1500)message.reply(critiques[Math.floor(Math.random() * critiques.length)]).catch((e) => console.log(e))
+      if(message.content.length > 1500)message.reply(critiques[Math.floor(Math.random() * critiques.length)]+' '+tomato[Math.floor(Math.random() * tomato.length)]).catch((e) => console.log(e))
       message.channel.stopTyping();
     }), 5000
   }
