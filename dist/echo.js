@@ -8,7 +8,7 @@ bot.on('ready', function() {
 });
 
 function askForScript() {
-  bot.channels.find( c => c.id == '345940851412828161').send('gimme a script')
+  bot.channels.find( c => c.id == '345940851412828161').send('gimme a script').catch()
 }
 
 (function loop() {
@@ -25,7 +25,7 @@ bot.on('message', function(message) {
   if(message.author.id != bot.id && message.channel.id == '345940851412828161' && message.author.username == 'gbp' && message.content.match(/how about this one:/)){
     message.channel.startTyping()
     setTimeout(() => {
-      message.react(Math.round(Math.random() * 10) ? '+1': '-1')
+      message.react(Math.round(Math.random() * 10) ? ':+1:': ':-1:')
       message.channel.stopTyping();
     }), 5000
   }
