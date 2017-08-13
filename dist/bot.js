@@ -5,18 +5,6 @@
 
 /*jslint node: true */
 
-String.prototype.hexDecode = function(){
-  var j;
-  var hexes = this.match(/.{1,4}/g) || [];
-  var back = "";
-  for(j = 0; j<hexes.length; j++) {
-    back += String.fromCharCode(parseInt(hexes[j], 16));
-
-  }
-
-  return back;
-
-}
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -73,9 +61,9 @@ var _util = require('util');
 
 var _sentiment = require('sentiment');
 
-const positive_responses = ['+1', 'smiley']
+const positive_response = "👍"
 
-const negative_responses = ['-1','angry']
+const negative_response = "👎"
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -245,20 +233,26 @@ class Bot {
 
     }
 
-    this.findword = function(g,jj){
-      var deferred = _q.defer();
+    this.findword = function(g, cache){
+      if(cache[g]){
+         _winston2.default.info(`Found >>${g}<< in cache`)
+        return _q.resolve(cache[g])
+      }      
+      var deferred = _q.defer();      
       var msgs = []
       var timer = Date.now()
       wordnet.lookup(g, function(results) {
         results.forEach(function(result) {
           msgs.push(...result.synonyms)
         });
-        deferred.resolve([g,...msgs]);
+        var rez = [g,...msgs];
+        cache[g] = rez
+        deferred.resolve(rez);
          _winston2.default.info(`Time elapsed for findword for >>${g}<<`, Date.now() - timer)
       });
       return deferred.promise;}
 
-    this.findwordfrombrain = function(g,jj){
+    this.findwordfrombrain = function(g, cache){
       var deferred = _q.defer();
       var tally = 0
       var msg = ''
@@ -275,7 +269,13 @@ class Bot {
             _winston2.default.help("INSPECTING FROM BRAIN "+_util.inspect(obj))
             var sortedkeys = _l.sortBy(Object.keys(obj), e => obj[e])
             sortedkeys.forEach( e => reference[e] = obj)
-            var vall = _l.map(sortedkeys, e => _this.findword(e))
+            var vall = _l.map(sortedkeys, e => {
+              if(cache[e]){
+                _winston2.default.info(`Found >>${e}<< in cache`)
+                return _q.resolve(cache[e])
+              }
+              else return _this.findword(e) 
+            })
             _q.all(vall).done(function(syns){
               var syn = _l.flatten(syns)
               _winston2.default.data("CHECKING SYNONYMS FROM "+_util.inspect(syn))
@@ -427,21 +427,19 @@ class Bot {
 
       _winston2.default.info('******************** MESSAGE SENTIMENT ',_sentiment(msg).score)
       if(_sentiment(msg).score >= 4){
-        var positive_response = positive_responses[0]//Math.floor(Math.random() * positive_responses.length)]
-        //responder(message, positive_response, this)
         _winston2.default.info('******************** positive '+positive_response)
-
+        //responder(msg, positive_response, this)
         saveFact(msg, positive_response, 't', message.author.username)
       }
       else if(_sentiment(msg).score <= -4){
-        var negative_response = negative_responses[0]//Math.floor(Math.random() * negative_responses.length)]
-        //responder(message, negative_response, this)
         _winston2.default.info('******************** negative '+negative_response)
+        //responder(msg, negative_response, this)
         saveFact(msg, negative_response,'t', message.author.username)
       }
       if(!_l.isEmpty(presynmsgs)){
         var _this = this
-        var promises = _l.flatten(_l.map(presynmsgs, function(g){ return [_this.findwordfrombrain(g), _this.findword(g)]}))
+        var cache = {}
+        var promises = _l.flatten(_l.map(presynmsgs, function(g){ return [_this.findwordfrombrain(g, cache), _this.findword(g,cache)]}))
         _q.all(promises).done(function(y){
           var msgs = _l.uniq(_l.flatten(y))
           _winston2.default.info("CANDIDATE KEYS", msgs)
