@@ -2,7 +2,9 @@ var Discord = require('discord.js');
 
 var bot = new Discord.Client({autoReconnect: true});
 
-var reactions = ['🤷','👍'<, '👎']
+var reactions = ['sounds interesting','that one sucks']
+
+var emojis = null;
 
 bot.on('ready', function() {
   console.log('logged in')
@@ -14,7 +16,8 @@ function askForScript() {
 }
 
 (function loop() {
-  var rand = Math.round(Math.random() * (5000000)) + 500000;
+  var rand = Math.round(Math.random() * (600000)) + 300000;
+  console.log(`doing it again in ${rand/1000}`)
   setTimeout(function() {
     askForScript();
     loop();
@@ -27,11 +30,12 @@ bot.on('message', function(message) {
   if(message.author.id != bot.id && message.channel.id == '345940851412828161' && message.author.username == 'gbp' && message.content.match(/how about this one:/)){
     message.channel.startTyping()
     setTimeout(() => {
-      message.react(reactions[Math.floor(Math.random() * reactions.length)])
+      message.reply(reactions[Math.floor(Math.random() * reactions.length)]).catch((e) => console.log(e))
+      message.react(emojis.random())
       message.channel.stopTyping();
     }), 5000
   }
   // if(resp && userID != bot.id){console.log('going to respond to resp in %s seconds',delay/1000), setTimeout(() => {
   // }, delay)}
 })
-bot.login("MzQ1NTgyNzQ2OTQ2NzY0ODAw.DG9Yiw.5cYlQnqJGmvjoT8hyeLRz7gT1bY").then(askForScript)
+bot.login("MzQ1NTgyNzQ2OTQ2NzY0ODAw.DG9Yiw.5cYlQnqJGmvjoT8hyeLRz7gT1bY").then(() => {askForScript(); emojis = bot.guilds.first().emojis})

@@ -22,7 +22,8 @@ class Films {
         var parsedPage = c.load(body)
         console.log("parsing "+parsedPage('title').text())
         var hasPlot = parsedPage('#Plot')
-        if(!hasPlot.html() || !parsedPage('#Plot').parent().next().text().match(/This section is empty\./)){
+        var text = parsedPage('#Plot').parent().next().text()
+        if(!hasPlot.html() || text.match(/This section is empty\./) || text.match(/This article's plot summary may be too long or excessively detailed/)){
           setTimeout(() => {
             findPlot()
           },2000)}
