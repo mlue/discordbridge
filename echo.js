@@ -1,4 +1,5 @@
 var Discord = require('discord.js');
+var nlp = require('compromise');
 
 var bot = new Discord.Client({autoReconnect: true});
 
@@ -31,10 +32,14 @@ bot.on('message', function(message) {
   var delay = Math.random()* 30000
   if(message.author.id != bot.id && message.channel.id == '345940851412828161' && message.author.username == 'gbp' && message.content.match(/~fin~/)){
     message.channel.startTyping()
+    var topics = _l(nlp(message.content).nouns().out('array')).countBy().toPairs().sortBy(e => -e[1]).value();
+    var pro = topics[0][0]
+    var sup = topics[1][0]
     setTimeout(() => {
       // message.reply(reactions[Math.floor(Math.random() * reactions.length)]).catch((e) => console.log(e))
       message.react(reactions[Math.floor(Math.random() * reactions.length)]).catch((e) => console.log(e))
-      message.react(emojis.random())
+      var critiques = [`I'm not sure about ${pro}`, `${pro} was definitely unfair to ${sup}`, `Should ${pro} end up happy? ${sup} was a shit`, `Should ${pro} end up happy? ${sup} was a shit`, `Should ${pro} end up happy? ${sup} was a shit`]
+      message.reply(critiques[Math.floor(Math.random() * critiques.length)]).catch((e) => console.log(e))
       message.channel.stopTyping();
     }), 5000
   }

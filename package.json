@@ -50,6 +50,7 @@
     "check-env": "1.2.0",
     "cheerio": "^1.0.0-rc.2",
     "commander": "2.9.0",
+    "compromise": "^10.7.1",
     "country-list": "^1.1.0",
     "debug": "^2.6.8",
     "discord.io": "github:izy521/discord.io",
