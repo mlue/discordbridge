@@ -3,8 +3,8 @@ var Discord = require('discord.js');
 var bot = new Discord.Client({autoReconnect: true});
 
 //var reactions = ['sounds interesting','that one sucks', "i'd watch it", "maybe not", "for real?", "lol no", "come on man"]
-
-var reactions =  ['+1', '-1']
+ 
+var reactions = ["🤷","👍", "👎"]
 
 var emojis = null;
 
