@@ -2,7 +2,9 @@ var Discord = require('discord.js');
 
 var bot = new Discord.Client({autoReconnect: true});
 
-var reactions = ['sounds interesting','that one sucks']
+//var reactions = ['sounds interesting','that one sucks', "i'd watch it", "maybe not", "for real?", "lol no", "come on man"]
+
+var reactions =  ['+1', '-1']
 
 var emojis = null;
 
@@ -30,7 +32,8 @@ bot.on('message', function(message) {
   if(message.author.id != bot.id && message.channel.id == '345940851412828161' && message.author.username == 'gbp' && message.content.match(/how about this one:/)){
     message.channel.startTyping()
     setTimeout(() => {
-      message.reply(reactions[Math.floor(Math.random() * reactions.length)]).catch((e) => console.log(e))
+      // message.reply(reactions[Math.floor(Math.random() * reactions.length)]).catch((e) => console.log(e))
+      message.react(reactions[Math.floor(Math.random() * reactions.length)]).catch((e) => console.log(e))
       message.react(emojis.random())
       message.channel.stopTyping();
     }), 5000
