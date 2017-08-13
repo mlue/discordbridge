@@ -237,8 +237,8 @@ class Bot {
       if(cache[g]){
          _winston2.default.info(`Found >>${g}<< in cache`)
         return _q.resolve(cache[g])
-      }      
-      var deferred = _q.defer();      
+      }
+      var deferred = _q.defer();
       var msgs = []
       var timer = Date.now()
       wordnet.lookup(g, function(results) {
@@ -274,7 +274,7 @@ class Bot {
                 _winston2.default.info(`Found >>${e}<< in cache`)
                 return _q.resolve(cache[e])
               }
-              else return _this.findword(e) 
+              else return _this.findword(e)
             })
             _q.all(vall).done(function(syns){
               var syn = _l.flatten(syns)
@@ -423,7 +423,7 @@ class Bot {
       if(should_msg)_winston2.default.input("WRITING for "+msg+"\n\n\n\n");
       // var presynmsgs = _l.reject(_l.split(msg.replace(/(dicks?|pussy|penis|assholes?|butts?)/,
       //                                                 'eggplant'),' '), function(g){return _l.includes(['it', 'a', 'i'],g)} || this.isNumeric(g) );
-      var presynmsgs = _l(msg).split(' ').reject( x => {return _l.includes(["DT", "TO"],tagger.tag([x])[0][1]) || (x.length < 2 && x.match(/^[a-zA-Z0-9]+$/)) }).uniq.value()
+      var presynmsgs = _l(msg).split(' ').reject( x => {return _l.includes(["DT", "TO"],tagger.tag([x])[0][1]) || (x.length < 2 && x.match(/^[a-zA-Z0-9]+$/)) }).uniq().value()
 
       _winston2.default.info('******************** MESSAGE SENTIMENT ',_sentiment(msg).score)
       if(_sentiment(msg).score >= 4){
