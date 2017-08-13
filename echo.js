@@ -1,7 +1,7 @@
 var Discord = require('discord.js');
 var nlp = require('compromise');
 var _l = require('lodash')
-var twitter = require('twitter')
+var Twitter = require('twitter')
 var client = new Twitter({
   consumer_key: process.env.consumer_key,
   consumer_secret: process.env.consumer_secret,
