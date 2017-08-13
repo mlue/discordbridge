@@ -423,17 +423,17 @@ class Bot {
       if(should_msg)_winston2.default.input("WRITING for "+msg+"\n\n\n\n");
       // var presynmsgs = _l.reject(_l.split(msg.replace(/(dicks?|pussy|penis|assholes?|butts?)/,
       //                                                 'eggplant'),' '), function(g){return _l.includes(['it', 'a', 'i'],g)} || this.isNumeric(g) );
-      var presynmsgs = _l(msg).split(' ').reject( x => {return _l.includes(["DT", "TO"],tagger.tag([x])[0][1]) || (x.length < 2 && x.match(/^[a-zA-Z0-9]+$/)) }).value()
+      var presynmsgs = _l(msg).split(' ').reject( x => {return _l.includes(["DT", "TO"],tagger.tag([x])[0][1]) || (x.length < 2 && x.match(/^[a-zA-Z0-9]+$/)) }).uniq.value()
 
       _winston2.default.info('******************** MESSAGE SENTIMENT ',_sentiment(msg).score)
-      if(_sentiment(msg).score >= 2){
+      if(_sentiment(msg).score >= 4){
         var positive_response = positive_responses[0]//Math.floor(Math.random() * positive_responses.length)]
         //responder(message, positive_response, this)
         _winston2.default.info('******************** positive '+positive_response)
 
         saveFact(msg, positive_response, 't', message.author.username)
       }
-      else if(_sentiment(msg).score <= -2){
+      else if(_sentiment(msg).score <= -4){
         var negative_response = negative_responses[0]//Math.floor(Math.random() * negative_responses.length)]
         //responder(message, negative_response, this)
         _winston2.default.info('******************** negative '+negative_response)
@@ -449,7 +449,7 @@ class Bot {
           //TODO MERGE brain associations back into associative array?
           var find = _l.intersection(scrambledkeys,msgs)[0]
           var a = _this.emojis[find];
-          _winston2.default.error(`find found - >>>${find}<<< for >>${msg}<< using >>>${a}<<< || code 1 -> ${find} || code 2 ->${'flag_us' == find} `)
+          _winston2.default.error(`find found - >>>${find}<<< for >>${msg}<< using >>>${a}<<< || code 1 -> ${find} `)
           if (a){
             _winston2.default.info('contextual from -- '+msg+' -- '+a);
             if(should_msg)responder(message, a, _this)

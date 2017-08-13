@@ -18,8 +18,8 @@ function askForScript() {
 }
 
 (function loop() {
-  var rand = Math.round(Math.random() * (120000000) + 600000) ;
-  console.log(`doing it again in ${rand/(50000)} minutes`)
+  var rand = Math.round(Math.random() * (3600000) + 600000) ;
+  console.log(`doing it again in ${rand/(60000)} minutes`)
   setTimeout(function() {
     askForScript();
     loop();
