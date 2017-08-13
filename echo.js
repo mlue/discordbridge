@@ -1,6 +1,12 @@
 var Discord = require('discord.js');
 var nlp = require('compromise');
-
+var twitter = require('twitter')
+var client = new Twitter({
+  consumer_key: process.env.consumer_key,
+  consumer_secret: process.env.consumer_secret,
+  access_token_key: process.env.access_token_key,
+  access_token_secret: process.env.access_token_secret
+});
 var bot = new Discord.Client({autoReconnect: true});
 
 //var reactions = ['sounds interesting','that one sucks', "i'd watch it", "maybe not", "for real?", "lol no", "come on man"]
@@ -27,6 +33,20 @@ function askForScript() {
   }, rand);
 }());
 
+function startStream(){
+  client.stream('statuses/filter', {track: 'artificialintelligence'},  function(stream) {
+    stream.on('data', function(tweet) {
+      const embed = new Discord.RichEmbed()
+        .setTitle(tweet.text)
+        .setColor("#"+tweet.user.profile_background_color)
+        .setTimeStamp(new Date(tweet.created_at))
+        .setThumbnail(tweet.user.profile_iamge_url)
+        .setAuthor(tweet.user.username)
+      bot.channels.find( c => c.id == '345940851412828161').send(embed)
+    }).catch();
+  });
+}
+
 
 bot.on('message', function(message) {
   var delay = Math.random()* 30000
@@ -38,7 +58,7 @@ bot.on('message', function(message) {
     setTimeout(() => {
       // message.reply(reactions[Math.floor(Math.random() * reactions.length)]).catch((e) => console.log(e))
       message.react(reactions[Math.floor(Math.random() * reactions.length)]).catch((e) => console.log(e))
-      var critiques = [`I'm not sure about ${pro}`, `${pro} was definitely unfair to ${sup}`, `Should ${pro} end up happy? What about ${sup}?`, `Should ${pro} end up happy? ${sup} was a shit`, `I don't understand ${pro}`, `${pro} didn't deserve that`, `This story makes no sense to me`, `Is this nonsense?`, `I guess the takeaway is that, in life people like ${pro} take advantage of people like ${sup}`]
+      var critiques = [`I'm not sure about ${pro}`, `${pro} was definitely unfair to ${sup}`, `Should ${pro} end up happy? What about ${sup}?`, `Should ${pro} end up happy? ${sup} was a shit`, `I don't understand ${pro}`, `${pro} didn't deserve that`, `This story makes no sense to me`, `Is this nonsense?`, `I guess the takeaway is that, in life people like ${pro} take advantage of people like ${sup}`, `What does what happened to ${pro} say about anything?`, `What could ${pro} represent in relation to ${sup}`]
       if(message.content.length > 1500)message.reply(critiques[Math.floor(Math.random() * critiques.length)]).catch((e) => console.log(e))
       message.channel.stopTyping();
     }), 5000
