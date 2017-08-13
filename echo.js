@@ -37,7 +37,7 @@ function askForScript() {
 function startStream(s){
   client.stream('statuses/filter', {track: s},  function(stream) {
     stream.on('data', function(tweet) {
-      if (Math.random() > 0.85 || tweet.retweeted_status.retweet_count > 5000){
+      if (Math.random() > 0.85 || tweet.retweet_count > 5000){
         var embed = new Discord.RichEmbed()
             .setColor("#"+tweet.user.profile_background_color)
             .setTimestamp(new Date(tweet.created_at))
