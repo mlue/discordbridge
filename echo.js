@@ -37,14 +37,13 @@ function askForScript() {
 function startStream(){
   client.stream('statuses/filter', {track: 'artificialintelligence'},  function(stream) {
     stream.on('data', function(tweet) {
-      const embed = new Discord.RichEmbed()
-        .setTitle(tweet.text)
-        .setColor("#"+tweet.user.profile_background_color)
-        .setTimeStamp(new Date(tweet.created_at))
-        .setThumbnail(tweet.user.profile_iamge_url)
-        .setAuthor(tweet.user.username)
-      bot.channels.find( c => c.id == '345940851412828161').send(embed)
-    }).catch();
+      var embed = new Discord.RichEmbed()
+          .setTitle(tweet.text).setColor("#"+tweet.user.profile_background_color)
+          .setTimestamp(new Date(tweet.created_at))
+          .setThumbnail(tweet.user.profile_image_url)
+          .setAuthor(tweet.user.username)
+      bot.channels.find( c => c.id == '345940851412828161').send(embed).catch();
+    })
   });
 }
 
