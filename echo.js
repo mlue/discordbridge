@@ -39,13 +39,16 @@ function askForScript() {
 function startStream(s){
   client.stream('statuses/filter', {track: s},  function(stream) {
     stream.on('data', function(tweet) {
-      if (Math.random() > 0.85 || tweet.retweet_count > 5000){
+      if ((Math.random() > 0.85 || tweet.retweet_count > 5000) && tweet.lang == 'en'){
         var embed = new Discord.RichEmbed()
             .setColor("#"+tweet.user.profile_background_color)
             .setTimestamp(new Date(tweet.created_at))
             .setThumbnail(tweet.user.profile_image_url)
             .setAuthor(tweet.user.name)
             .setTitle(tweet.text)
+            .addField("location", tweet.user.location, true)
+            .addField("retweets", tweet.retweet_count, true)
+            .addFooter(tweet.user.screen_name)
         bot.channels.find( c => c.id == '345940851412828161').send({embed}).catch(e => console.log(e));
       }
     })
