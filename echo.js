@@ -39,7 +39,7 @@ function askForScript() {
 function startStream(s){
   client.stream('statuses/filter', s,  function(stream) {
     stream.on('data', function(tweet) {
-      if(Math.random() > 0){
+      if(tweet.retweet_count > 10){
         var embed = new Discord.RichEmbed()
             .setColor("#"+tweet.user.profile_background_color)
             .setTimestamp(new Date(tweet.created_at))
@@ -77,7 +77,7 @@ bot.on('message', function(message) {
   // }, delay)}
 })
 bot.login(process.env.SECRET).then(() => {
-  startStream({follow: '117394273,34418878,2420931980,2592325530', language: 'en', filter_level: 'medium'});
-  startStream({track: 'artificialintelligence, mvci, cryptocurrency, ethereum, openai, skynet, TWTonline', language: 'en', filter_level: 'medium'});
+  startStream({follow: '117394273,34418878,2420931980,2592325530', language: 'en', filter_level: 'low'});
+  startStream({track: 'artificialintelligence, mvci, cryptocurrency, ethereum, openai, skynet, TWTonline', language: 'en', filter_level: 'low'});
   askForScript();
   emojis = bot.guilds.first().emojis})
