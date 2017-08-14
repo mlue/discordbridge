@@ -65,6 +65,9 @@ const positive_response = "👍"
 
 const negative_response = "👎"
 
+var jsmegahal = require('jsmegahal');
+var megahal = new jsmegahal(4);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 _winston2.default.setLevels({
@@ -469,6 +472,11 @@ class Bot {
     }
     var that = this;
     this.discord.on('message', message => {
+      if(message.content.match(/\B{5,}\.\B{10,}/))megahal.addMass(message.content)
+      else megahal.add(message.content)
+      if(message.author.id != bot.id && message.channel.id == '345940851412828161' && message.author.username == 'echo')setTimeout(() => {
+          message.channel.send(megahal.getReplyFromSentence(message.content))
+      }, Math.random() * 20000)
       if(message.content.match(/^gimme a script/) && message.author.username != 'gbp'){
         message.channel.startTyping()
         film.getPlot().then((content) => {

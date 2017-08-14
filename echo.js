@@ -2,6 +2,8 @@ var Discord = require('discord.js');
 var nlp = require('compromise');
 var _l = require('lodash')
 var Twitter = require('twitter')
+var jsmegahal = require('jsmegahal');
+var megahal = new jsmegahal(4);
 var client = new Twitter({
   consumer_key: process.env.consumer_key,
   consumer_secret: process.env.consumer_secret,
@@ -28,7 +30,7 @@ function askForScript() {
 }
 
 (function loop() {
-  var rand = Math.round(Math.random() * (3600000) + 600000) ;
+  var rand = Math.round(Math.random() * (1000000) + 600000) ;
   console.log(`doing it again in ${rand/(60000)} minutes`)
   setTimeout(function() {
     askForScript();
@@ -59,8 +61,13 @@ function startStream(s){
 
 
 bot.on('message', function(message) {
-  var delay = Math.random()* 30000
+  if(message.content.match(/\B{5,}\.\B{10,}/))megahal.addMass(message.content)
+  else megahal.add(message.content)
+  var delay = Math.random()* 50000
   if(message.author.id != bot.id && message.channel.id == '345940851412828161' && message.author.username == 'gbp'){
+    setTimeout(() => {
+      message.channel.send(megahal.getReplyFromSentence(message.content))
+    }, Math.random() * 20000)
     if(message.content.length > 800)message.channel.startTyping()
     var topics = _l(nlp(message.content).nouns().out('array')).countBy().toPairs().sortBy(e => -e[1]).value();
     var pro = topics[0][0]
