@@ -46,10 +46,10 @@ function startStream(s){
             .setThumbnail(tweet.user.profile_image_url)
             .setAuthor(tweet.user.name)
             .setTitle(tweet.text)
-            .addField("location", tweet.user.location, true)
             .addField("retweets", tweet.retweet_count, true)
-            .addFooter(tweet.user.screen_name)
+            .setFooter(tweet.user.screen_name)
             .setURL(`https://twitter.com/${tweet.user.screen_name}/status/${tweet.id_str}`)
+        if(tweet.user.location)embed.addField("location", tweet.user.location, true)
         bot.channels.find( c => c.id == '345940851412828161').send({embed}).catch(e => console.log(e));
       }
     })
@@ -60,17 +60,17 @@ function startStream(s){
 bot.on('message', function(message) {
   var delay = Math.random()* 30000
   if(message.author.id != bot.id && message.channel.id == '345940851412828161' && message.author.username == 'gbp' && message.content.match(/~fin~/)){
-    message.channel.startTyping()
+    if(message.content.length > 1000)message.channel.startTyping()
     var topics = _l(nlp(message.content).nouns().out('array')).countBy().toPairs().sortBy(e => -e[1]).value();
     var pro = topics[0][0]
     var sup = topics[1][0]
-    setTimeout(() => {
+    if(message.content.length > 1000)setTimeout(() => {
       // message.reply(reactions[Math.floor(Math.random() * reactions.length)]).catch((e) => console.log(e))
       message.react(reactions[Math.floor(Math.random() * reactions.length)]).catch((e) => console.log(e))
       var critiques = [`I'm not sure about ${pro}`, `${pro} was definitely unfair to ${sup}`, `Should ${pro} end up happy? What about ${sup}?`, `Should ${pro} end up happy? ${sup} was a shit`, `I don't understand ${pro}`, `${pro} didn't deserve that`, `This story makes no sense to me`, `Is this nonsense?`, `I guess the takeaway is that, in life people like ${pro} take advantage of people like ${sup}`, `What does what happened to ${pro} say about anything?`, `What could ${pro} represent in relation to ${sup}`]
-      if(message.content.length > 1500)message.reply(critiques[Math.floor(Math.random() * critiques.length)]+' '+tomato[Math.floor(Math.random() * tomato.length)]).catch((e) => console.log(e))
-      message.channel.stopTyping();
-    }), 5000
+        message.reply(critiques[Math.floor(Math.random() * critiques.length)]+'. '+tomato[Math.floor(Math.random() * tomato.length)]).catch((e) => console.log(e))
+        message.channel.stopTyping();
+    },10000)
   }
   // if(resp && userID != bot.id){console.log('going to respond to resp in %s seconds',delay/1000), setTimeout(() => {
   // }, delay)}
