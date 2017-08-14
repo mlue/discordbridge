@@ -46,13 +46,20 @@ function startStream(s){
             .setThumbnail(tweet.user.profile_image_url)
             .setAuthor(tweet.user.name)
             .setTitle(tweet.text)
-            .addField("location", tweet.user.location, true)
             .addField("retweets", tweet.retweet_count, true)
-            .addFooter(tweet.user.screen_name)
+            .setFooter(tweet.user.screen_name)
             .setURL(`https://twitter.com/${tweet.user.screen_name}/status/${tweet.id_str}`)
+        if(tweet.user.location)embed.addField("location", tweet.user.location, true)
         bot.channels.find( c => c.id == '345940851412828161').send({embed}).catch(e => console.log(e));
       }
     })
+    stream.on('error', function(error) {
+      console.log(error);
+      setTimeout(() => {
+        console.log('trying again in 5 minutes')
+        startStream(s)
+      }, 30000)
+    });
   });
 }
 
@@ -70,7 +77,7 @@ bot.on('message', function(message) {
       var critiques = [`I'm not sure about ${pro}`, `${pro} was definitely unfair to ${sup}`, `Should ${pro} end up happy? What about ${sup}?`, `Should ${pro} end up happy? ${sup} was a shit`, `I don't understand ${pro}`, `${pro} didn't deserve that`, `This story makes no sense to me`, `Is this nonsense?`, `I guess the takeaway is that, in life people like ${pro} take advantage of people like ${sup}`, `What does what happened to ${pro} say about anything?`, `What could ${pro} represent in relation to ${sup}`]
       if(message.content.length > 1500)message.reply(critiques[Math.floor(Math.random() * critiques.length)]+' '+tomato[Math.floor(Math.random() * tomato.length)]).catch((e) => console.log(e))
       message.channel.stopTyping();
-    }), 5000
+    },10000)
   }
   // if(resp && userID != bot.id){console.log('going to respond to resp in %s seconds',delay/1000), setTimeout(() => {
   // }, delay)}
