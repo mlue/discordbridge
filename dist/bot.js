@@ -436,7 +436,7 @@ class Bot {
         //responder(msg, negative_response, this)
         saveFact(msg, negative_response,'t', message.author.username)
       }
-      if(!_l.isEmpty(presynmsgs) && presynmsgs.length < 90){
+      if(!_l.isEmpty(presynmsgs) && presynmsgs.length < 40){
         var _this = this
         var cache = {}
         var promises = _l.flatten(_l.map(presynmsgs, function(g){ return [_this.findwordfrombrain(g, cache), _this.findword(g,cache)]}))
@@ -716,7 +716,7 @@ class Bot {
     const withAuthor = Bot.substitutePattern(this.formatDiscord, patternMap);
       _winston2.default.debug('Sending message to Discord', withAuthor, channel, '->', `#${discordChannel.name}`);
       if (author.match(/gbp/)) {
-	  discordChannel.sendMessage(withFormat.replace(/gbp1:?/,''));
+	  discordChannel.sendMessage(withFormat.replace(/gbp\d?:?/,''));
       }
   }
 

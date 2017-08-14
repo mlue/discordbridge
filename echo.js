@@ -53,17 +53,18 @@ function startStream(s){
         bot.channels.find( c => c.id == '345940851412828161').send({embed}).catch(e => console.log(e));
       }
     })
+    stream.on('error', e => console.log(e))
   })
 }
 
 
 bot.on('message', function(message) {
   var delay = Math.random()* 30000
-  if(message.author.id != bot.id && message.channel.id == '345940851412828161' && message.author.username == 'gbp')){
+  if(message.author.id != bot.id && message.channel.id == '345940851412828161' && message.author.username == 'gbp'){
     if(message.content.length > 800)message.channel.startTyping()
     var topics = _l(nlp(message.content).nouns().out('array')).countBy().toPairs().sortBy(e => -e[1]).value();
     var pro = topics[0][0]
-    var sup = topics[1][0]
+    var sup = topics[1] ? topics[1][0] : 'everyone else'
     if(message.content.length > 800)setTimeout(() => {
       // message.reply(reactions[Math.floor(Math.random() * reactions.length)]).catch((e) => console.log(e))
       message.react(reactions[Math.floor(Math.random() * reactions.length)]).catch((e) => console.log(e))
@@ -75,4 +76,8 @@ bot.on('message', function(message) {
   // if(resp && userID != bot.id){console.log('going to respond to resp in %s seconds',delay/1000), setTimeout(() => {
   // }, delay)}
 })
-bot.login(process.env.SECRET).then(() => {startStream({track: 'artificialintelligence, mvci, cryptocurrency, ethereum, openai, skynet', language: 'en', filter_level: 'low'}); askForScript(); emojis = bot.guilds.first().emojis})
+bot.login(process.env.SECRET).then(() => {
+  startStream({follow: '117394273,34418878,2420931980,2592325530', language: 'en', filter_level: 'medium'});
+  startStream({track: 'artificialintelligence, mvci, cryptocurrency, ethereum, openai, skynet, TWTonline', language: 'en', filter_level: 'medium'});
+  askForScript();
+  emojis = bot.guilds.first().emojis})
