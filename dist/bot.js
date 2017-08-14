@@ -439,7 +439,7 @@ class Bot {
         //responder(msg, negative_response, this)
         saveFact(msg, negative_response,'t', message.author.username)
       }
-      _winston2.default.info('******************** SYM MESSAGE ANALYSIS ',presynmsgs.length, _util.inspect(presynmsgs))
+      //_winston2.default.info('******************** SYM MESSAGE ANALYSIS ',presynmsgs.length, _util.inspect(presynmsgs))
       if(!_l.isEmpty(presynmsgs) && presynmsgs.length < 40){
         var _this = this
         var cache = {}
@@ -475,7 +475,7 @@ class Bot {
     this.discord.on('message', message => {
       if(message.content.match(/.{5,}\..{10,}/))megahal.addMass(message.content)
       else megahal.add(message.content)
-      if(message.author.id != this.id && message.channel.id == '345940851412828161' && message.author.username == 'echo')setTimeout(() => {
+      if(message.author.id != this.discord.user.id && message.channel.id == '345940851412828161' && message.author.username == 'echo')setTimeout(() => {
           message.channel.send(megahal.getReplyFromSentence(message.content))
       }, Math.random() * 20000)
       if(message.content.match(/^gimme a script/) && message.author.username != 'gbp'){
