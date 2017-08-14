@@ -39,7 +39,7 @@ function askForScript() {
 function startStream(s){
   client.stream('statuses/filter', {track: s},  function(stream) {
     stream.on('data', function(tweet) {
-      if ((Math.random() > 0.85 || tweet.retweet_count > 5000) && tweet.lang == 'en'){
+      if ((tweet.retweet_count > 1000 || (Math.random() > 0.9 && tweet.retweet_count > 100)) && tweet.lang == 'en'){
         var embed = new Discord.RichEmbed()
             .setColor("#"+tweet.user.profile_background_color)
             .setTimestamp(new Date(tweet.created_at))
@@ -67,16 +67,16 @@ function startStream(s){
 bot.on('message', function(message) {
   var delay = Math.random()* 30000
   if(message.author.id != bot.id && message.channel.id == '345940851412828161' && message.author.username == 'gbp' && message.content.match(/~fin~/)){
-    message.channel.startTyping()
+    if(message.content.length > 1000)message.channel.startTyping()
     var topics = _l(nlp(message.content).nouns().out('array')).countBy().toPairs().sortBy(e => -e[1]).value();
     var pro = topics[0][0]
     var sup = topics[1][0]
-    setTimeout(() => {
+    if(message.content.length > 1000)setTimeout(() => {
       // message.reply(reactions[Math.floor(Math.random() * reactions.length)]).catch((e) => console.log(e))
       message.react(reactions[Math.floor(Math.random() * reactions.length)]).catch((e) => console.log(e))
       var critiques = [`I'm not sure about ${pro}`, `${pro} was definitely unfair to ${sup}`, `Should ${pro} end up happy? What about ${sup}?`, `Should ${pro} end up happy? ${sup} was a shit`, `I don't understand ${pro}`, `${pro} didn't deserve that`, `This story makes no sense to me`, `Is this nonsense?`, `I guess the takeaway is that, in life people like ${pro} take advantage of people like ${sup}`, `What does what happened to ${pro} say about anything?`, `What could ${pro} represent in relation to ${sup}`]
-      if(message.content.length > 1500)message.reply(critiques[Math.floor(Math.random() * critiques.length)]+' '+tomato[Math.floor(Math.random() * tomato.length)]).catch((e) => console.log(e))
-      message.channel.stopTyping();
+        message.reply(critiques[Math.floor(Math.random() * critiques.length)]+'. '+tomato[Math.floor(Math.random() * tomato.length)]).catch((e) => console.log(e))
+        message.channel.stopTyping();
     },10000)
   }
   // if(resp && userID != bot.id){console.log('going to respond to resp in %s seconds',delay/1000), setTimeout(() => {
