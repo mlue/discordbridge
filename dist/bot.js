@@ -474,7 +474,7 @@ class Bot {
     this.discord.on('message', message => {
       if(message.content.match(/.{5,}\..{10,}/))megahal.addMass(message.content)
       else megahal.add(message.content)
-      if(message.author.id != bot.id && message.channel.id == '345940851412828161' && message.author.username == 'echo')setTimeout(() => {
+      if(message.author.id != this.id && message.channel.id == '345940851412828161' && message.author.username == 'echo')setTimeout(() => {
           message.channel.send(megahal.getReplyFromSentence(message.content))
       }, Math.random() * 20000)
       if(message.content.match(/^gimme a script/) && message.author.username != 'gbp'){
