@@ -61,7 +61,7 @@ function startStream(s){
 
 
 bot.on('message', function(message) {
-  if(message.content.match(/\B{5,}\.\B{10,}/))megahal.addMass(message.content)
+  if(message.content.match(/.{5,}\..{10,}/))megahal.addMass(message.content)
   else megahal.add(message.content)
   var delay = Math.random()* 50000
   if(message.author.id != bot.id && message.channel.id == '345940851412828161' && message.author.username == 'gbp'){
