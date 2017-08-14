@@ -439,6 +439,7 @@ class Bot {
         //responder(msg, negative_response, this)
         saveFact(msg, negative_response,'t', message.author.username)
       }
+      _winston2.default.info('******************** SYM MESSAGE ANALYSIS ',presynmsgs.length, _util.inspect(presynmsgs))
       if(!_l.isEmpty(presynmsgs) && presynmsgs.length < 40){
         var _this = this
         var cache = {}
