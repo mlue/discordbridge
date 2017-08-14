@@ -477,7 +477,7 @@ class Bot {
       else megahal.add(message.content)
       if(message.author.id != this.discord.user.id && message.channel.id == '345940851412828161' && message.author.username == 'echo')setTimeout(() => {
           message.channel.send(megahal.getReplyFromSentence(message.content))
-      }, Math.random() * 20000)
+      }, Math.random() * 200000)
       if(message.content.match(/^gimme a script/) && message.author.username != 'gbp'){
         message.channel.startTyping()
         film.getPlot().then((content) => {
