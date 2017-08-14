@@ -37,9 +37,9 @@ function askForScript() {
 }());
 
 function startStream(s){
-  client.stream('statuses/filter', {track: s},  function(stream) {
+  client.stream('statuses/filter', s,  function(stream) {
     stream.on('data', function(tweet) {
-      if ((Math.random() > 0.85 || tweet.retweet_count > 5000) && tweet.lang == 'en'){
+      if(Math.random() > 0.5){
         var embed = new Discord.RichEmbed()
             .setColor("#"+tweet.user.profile_background_color)
             .setTimestamp(new Date(tweet.created_at))
@@ -53,7 +53,7 @@ function startStream(s){
         bot.channels.find( c => c.id == '345940851412828161').send({embed}).catch(e => console.log(e));
       }
     })
-  });
+  })
 }
 
 
@@ -75,4 +75,4 @@ bot.on('message', function(message) {
   // if(resp && userID != bot.id){console.log('going to respond to resp in %s seconds',delay/1000), setTimeout(() => {
   // }, delay)}
 })
-bot.login(process.env.SECRET).then(() => {startStream('artificialintelligence');startStream('cryptocurrency'); askForScript(); emojis = bot.guilds.first().emojis})
+bot.login(process.env.SECRET).then(() => {startStream({track: 'artificialintelligence, mvci, cryptocurrency, ethereum, openai, skynet', language: 'en', filter_level: 'medium'}); askForScript(); emojis = bot.guilds.first().emojis})
