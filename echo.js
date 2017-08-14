@@ -67,7 +67,7 @@ bot.on('message', function(message) {
   if(message.author.id != bot.user.id && message.channel.id == '345940851412828161' && message.author.username == 'gbp'){
     setTimeout(() => {
       message.channel.send(megahal.getReplyFromSentence(message.content))
-    }, Math.random() * 200000)
+    }, Math.random() * 1000000)
     if(message.content.length > 800)message.channel.startTyping()
     var topics = _l(nlp(message.content).nouns().out('array')).countBy().toPairs().sortBy(e => -e[1]).value();
     var pro = topics[0][0]
