@@ -66,7 +66,7 @@ const positive_response = "👍"
 const negative_response = "👎"
 
 var jsmegahal = require('jsmegahal');
-var megahal = new jsmegahal(4);
+var megahal = new jsmegahal(2);
 var nlp = require('compromise');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -164,7 +164,7 @@ var post_merge_size = Object.keys(_emojis).length
 
 var fs = require('fs');
 
-fs.readFile('seed.txt','utf8', (err,data) => {
+fs.readFile('/home/mlue/seed.txt','utf8', (err,data) => {
   megahal.addMass(data)
 })
 

@@ -3,7 +3,7 @@ var nlp = require('compromise');
 var _l = require('lodash')
 var Twitter = require('twitter')
 var jsmegahal = require('jsmegahal');
-var megahal = new jsmegahal(3);
+var megahal = new jsmegahal(2);
 var client = new Twitter({
   consumer_key: process.env.consumer_key,
   consumer_secret: process.env.consumer_secret,
