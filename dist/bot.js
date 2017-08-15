@@ -193,13 +193,13 @@ function saveFact(msg, emoji, s, user){
       var two = _l.lowerCase(RegExp.$2) //s == "o" ? RegExp.$1 : RegExp.$2
       // o is fact s is sentiment - l for like vs positive association
       db_string += s == 'o' ? one+":"+user+":p" : user+":"+one+(/likes/.exec(msg) ? ":l" : ":p");
-      _client.hget(db_string, s == 'o' ? two : one, function(err, obj){
-        _winston2.default.help("READ "+JSON.stringify(obj))
-        var value = obj ? parseInt(obj) + 1 : 1
-        _winston2.default.info("WRITING TO DB "+db_string+" || "+two+" || "+value)
-        _client.hset(db_string, two , value, redis.print)
-
-      });
+      if(_l.trim(two) != ""){
+        _winston2.default.info("INCREMENTING",db_string, "FOR", two)
+        _client.hincrby(db_string, s == 'o' ? two : one, 1, redis.print)
+      }
+      else{
+        _winston2.default.info("BAILING OUT - GOT EMPTY KEY FOR ",msg, "AGAIN")
+      }
     }
   } else if(/([^\s]+)\s(?:(?:(?:is|are)(?: not))|(?:doesn't\slike)|(?:aren't|isn't))(?: the)?(?: same)?(?: as)?(?: like)?\s*(?:a)?\s*([^\s]+)$/.exec(msg)){
     //!_l.some(_l.map(tagger.tag([RegExp.$2, RegExp.$1]), function(g){return g[1]}), function(x){ return x == "PRP"})
