@@ -67,10 +67,10 @@ function startStream(s){
 
 function queryTwitter(s){
   client.get('search/tweets', {q: s},  function(error, tweets, response) {
-    console.log(_util.inspect(tweets))
-    if(error)console.log(error) 
+    //console.log(_util.inspect(tweets))
+    if(error)console.log(error)
     else{
-      var tweet = _l(tweets).maxBy( t => t.retweet_count)
+      var tweet = _l(tweets.statuses).maxBy( t => t.retweet_count)
           var embed = new Discord.RichEmbed()
               .setColor("#"+tweet.user.profile_background_color)
               .setTimestamp(new Date(tweet.created_at))
