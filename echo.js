@@ -68,7 +68,7 @@ function startStream(s){
 function queryTwitter(s){
   client.get('search/tweets', {q: s},  function(error, tweets, response) {
     console.log(_util.inspect(tweets))
-    if(error)console.log(e) 
+    if(error)console.log(error) 
     else{
       var tweet = _l(tweets).maxBy( t => t.retweet_count)
           var embed = new Discord.RichEmbed()
