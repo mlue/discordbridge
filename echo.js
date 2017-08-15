@@ -70,7 +70,7 @@ bot.on('message', function(message) {
   else megahal.add(message.content)
   var delay = Math.random()* 50000
   if(message.author.id != bot.user.id && message.channel.id == '345940851412828161' && message.author.username == 'gbp'){
-    var convDelay = Math.random() * 120000+10000
+    var convDelay = Math.random() * 120000+60000
     setTimeout(() => {
       console.log('sending in '+convDelay/60000+' minutes')
       message.channel.send(megahal.getReplyFromSentence(message.content))
