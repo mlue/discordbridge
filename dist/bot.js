@@ -187,10 +187,11 @@ function responder(m,a,obj){
 function saveFact(msg, emoji, s, user){
   //I wanna encode the source with the fact to build a profile? and build a knowledge of knowldge
   var db_string = s == 'o' ? "emoji-fact-brain:" : "emoji-sentiment-brain:"
-  if(/([^\s]+)\s(?:is|are|likes?)(?! not)(?: the)?(?: same)?(?: as)?(?: like)?\s*(?:a)?\s*([^\s]+)$/.exec(msg)){
+  var match = null
+  if(match = /([^\s]+)\s(?:is|are|likes?)(?! not)(?: the)?(?: same)?(?: as)?(?: like)?\s*(?:a)?\s*([^\s]+)$/.exec(msg)){
     if(!_l.some(_l.map(tagger.tag([RegExp.$2, RegExp.$1]), function(g){return g[1]}), function(x){ return _l.includes(["PRP","DT"], x)})){
-      var one = _l.lowerCase(RegExp.$1) //s == "o" ? RegExp.$2 : RegExp.$1
-      var two = _l.lowerCase(RegExp.$2) //s == "o" ? RegExp.$1 : RegExp.$2
+      var one = match[1]
+      var two = match[2]
       // o is fact s is sentiment - l for like vs positive association
       db_string += s == 'o' ? one+":"+user+":p" : user+":"+one+(/likes/.exec(msg) ? ":l" : ":p");
       if(_l.trim(two) != ""){
@@ -198,7 +199,7 @@ function saveFact(msg, emoji, s, user){
         _client.hincrby(db_string, s == 'o' ? two : one, 1, redis.print)
       }
       else{
-        _winston2.default.info("BAILING OUT - GOT EMPTY KEY FOR ",msg, "AGAIN")
+        _winston2.default.info("BAILING OUT - GOT EMPTY KEY FOR --",msg, "-- AGAIN")
       }
     }
   } else if(/([^\s]+)\s(?:(?:(?:is|are)(?: not))|(?:doesn't\slike)|(?:aren't|isn't))(?: the)?(?: same)?(?: as)?(?: like)?\s*(?:a)?\s*([^\s]+)$/.exec(msg)){
