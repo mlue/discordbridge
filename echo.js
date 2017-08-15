@@ -4,6 +4,7 @@ var _l = require('lodash')
 var Twitter = require('twitter')
 var jsmegahal = require('jsmegahal');
 var megahal = new jsmegahal(2);
+var _util = require('util')
 var client = new Twitter({
   consumer_key: process.env.consumer_key,
   consumer_secret: process.env.consumer_secret,
@@ -66,6 +67,7 @@ function startStream(s){
 
 function queryTwitter(s){
   client.get('search/tweets', {q: s},  function(error, tweets, response) {
+    console.log(_util.inspect(tweets))
     if(error)console.log(e) 
     else{
       var tweet = _l(tweets).maxBy( t => t.retweet_count)
