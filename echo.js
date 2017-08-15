@@ -64,6 +64,26 @@ function startStream(s){
   })
 }
 
+function queryTwitter(s){
+  client.get('search/tweets', {q: s},  function(error, tweets, response) {
+    if(error)console.log(e) 
+    else{
+      var tweet = _l(tweets).maxBy( t => t.retweet_count)
+          var embed = new Discord.RichEmbed()
+              .setColor("#"+tweet.user.profile_background_color)
+              .setTimestamp(new Date(tweet.created_at))
+              .setThumbnail(tweet.user.profile_image_url)
+              .setAuthor(tweet.user.name)
+              .setTitle(tweet.text)
+              .addField("retweets", tweet.retweet_count, true)
+              .setFooter(tweet.user.screen_name)
+             .setURL(`https://twitter.com/${tweet.user.screen_name}/status/${tweet.id_str}`)
+          if(tweet.user.location)embed.addField("location", tweet.user.location, true)
+          bot.channels.find( c => c.id == '345940851412828161').send({embed}).catch(e => console.log(e));
+        }
+      })
+}
+
 
 bot.on('message', function(message) {
   if(message.content.match(/.{5,}\..+/))megahal.addMass(message.content)
@@ -94,5 +114,7 @@ bot.on('message', function(message) {
 bot.login(process.env.SECRET).then(() => {
   startStream({follow: '117394273,34418878,2420931980,2592325530,44918425', language: 'en', filter_level: 'low'});
   startStream({track: 'artificialintelligence, mvci, cryptocurrency, ethereum, openai, skynet, TWTonline', language: 'en', filter_level: 'low'});
+  setTimeout(queryTwitter('overwatch'), 10000)
+  setInterval(queryTwitter('overwatch'),1000*3600)
   askForScript();
   emojis = bot.guilds.first().emojis})
