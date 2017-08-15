@@ -3,7 +3,7 @@ var nlp = require('compromise');
 var _l = require('lodash')
 var Twitter = require('twitter')
 var jsmegahal = require('jsmegahal');
-var megahal = new jsmegahal(4);
+var megahal = new jsmegahal(3);
 var client = new Twitter({
   consumer_key: process.env.consumer_key,
   consumer_secret: process.env.consumer_secret,
@@ -35,7 +35,7 @@ function askForScript() {
 }
 
 (function loop() {
-  var rand = Math.round(Math.random() * (1920000) + 120000) ;
+  var rand = Math.round(Math.random() * (1920000) + 240000) ;
   console.log(`doing it again in ${rand/(60000)} minutes`)
   setTimeout(function() {
     askForScript();
@@ -46,7 +46,7 @@ function askForScript() {
 function startStream(s){
   client.stream('statuses/filter', s,  function(stream) {
     stream.on('data', function(tweet) {
-      if(true){
+      if(tweet.level == 'medium' || tweet.retweeted || Math.random() < 0.05){
         var embed = new Discord.RichEmbed()
             .setColor("#"+tweet.user.profile_background_color)
             .setTimestamp(new Date(tweet.created_at))
@@ -91,7 +91,7 @@ bot.on('message', function(message) {
   // }, delay)}
 })
 bot.login(process.env.SECRET).then(() => {
-  startStream({follow: '117394273,34418878,2420931980,2592325530', language: 'en', filter_level: 'medium'});
-  startStream({track: 'artificialintelligence, mvci, cryptocurrency, ethereum, openai, skynet, TWTonline', language: 'en', filter_level: 'medium'});
+  startStream({follow: '117394273,34418878,2420931980,2592325530,44918425', language: 'en', filter_level: 'low'});
+  startStream({track: 'artificialintelligence, mvci, cryptocurrency, ethereum, openai, skynet, TWTonline', language: 'en', filter_level: 'low'});
   askForScript();
   emojis = bot.guilds.first().emojis})
