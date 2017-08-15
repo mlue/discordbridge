@@ -163,7 +163,7 @@ var post_merge_size = Object.keys(_emojis).length
 
 var fs = require('fs');
 
-fs.readFile('./seed.txt', (err,data) => {
+fs.readFile('./seed.txt','utf8', (err,data) => {
   megahal.addMass(data)
 })
 
