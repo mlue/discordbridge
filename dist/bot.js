@@ -152,8 +152,8 @@ _emojis = _holder
 
 _emojis = _l.pickBy(_emojis, (v, k) => {
   //!/(?:flag_(?!us|en)..:|:on:|:back:)/.exec(k) && !_l.includes(_countrylist, k)
-  if(/(?:^flag_(?!us|en|jp)$|^on$|^back$|^one$|^two$|^three$|^four$|^up$|^do$|^no$)/.exec(k)){_winston2.default.info("OMITTING ",k); return false}
-  else if(_l.trim(k,':').length == 2 && /^[a-z:]+$/.exec(k) && !_l.includes(["tv","ox"],k)){_winston2.default.info("OMITTING ",k); return false}
+  if(/(?:^flag_(?!us|en|jp)$|^on$|^back$|^one$|^two$|^three$|^four$|^up$|^do$|^no$)/.exec(k)){return false}
+  else if(_l.trim(k,':').length == 2 && /^[a-z:]+$/.exec(k) && !_l.includes(["tv","ox"],k)){return false}
   else return true
 })
 
@@ -162,6 +162,11 @@ delete _emojis['one']
 var post_merge_size = Object.keys(_emojis).length
 
 var fs = require('fs');
+
+fs.readFile('./seed.txt', (err,data) => {
+  megahal.addMass(data)
+})
+
 fs.writeFile("emojilist", `growth: ${pre_merge_size} to ${post_merge_size} `+_util.inspect(_emojis), function(err) {
   if(err) {
     return console.log(err);
@@ -170,6 +175,7 @@ fs.writeFile("emojilist", `growth: ${pre_merge_size} to ${post_merge_size} `+_ut
   console.log("The file was saved!");
 
 });
+
 
 function responder(m,a,obj){
   m.react(a);
@@ -473,7 +479,7 @@ class Bot {
     }
     var that = this;
     this.discord.on('message', message => {
-      if(message.content.match(/.{5,}\..{10,}/))megahal.addMass(message.content)
+      if(message.content.match(/.{5,}\..+/))megahal.addMass(message.content)
       else megahal.add(message.content)
       if(message.author.id != that.discord.user.id && message.channel.id == '345940851412828161' && message.author.username == 'echo' && Math.random() > 0.6)setTimeout(() => {
           message.channel.send(megahal.getReplyFromSentence(message.content))

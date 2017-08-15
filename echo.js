@@ -10,6 +10,11 @@ var client = new Twitter({
   access_token_key: process.env.access_token_key,
   access_token_secret: process.env.access_token_secret
 });
+var fs = require('fs');
+
+fs.readFile('./seed.txt', (err,data) => {
+  megahal.addMass(data)
+})
 var bot = new Discord.Client({autoReconnect: true});
 
 var tomato = ['jejune','pretentious', 'meh', "wouldn't see it in theatres", "first-rate", "insightful", "clever", "charming", "comical", "charismatic", "enjoyable", "uproarious", "original", "tender", "hilarious", "absorbing", "sensitive", "riveting", "intriguing"]
@@ -61,7 +66,7 @@ function startStream(s){
 
 
 bot.on('message', function(message) {
-  if(message.content.match(/.{5,}\..{10,}/))megahal.addMass(message.content)
+  if(message.content.match(/.{5,}\..+/))megahal.addMass(message.content)
   else megahal.add(message.content)
   var delay = Math.random()* 50000
   if(message.author.id != bot.user.id && message.channel.id == '345940851412828161' && message.author.username == 'gbp'){
