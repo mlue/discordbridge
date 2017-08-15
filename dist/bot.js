@@ -67,6 +67,7 @@ const negative_response = "👎"
 
 var jsmegahal = require('jsmegahal');
 var megahal = new jsmegahal(4);
+var nlp = require('compromise');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -446,7 +447,7 @@ class Bot {
         saveFact(msg, negative_response,'t', message.author.username)
       }
       _winston2.default.info('******************** SYM MESSAGE ANALYSIS ',presynmsgs.length, _util.inspect(presynmsgs))
-      if(!_l.isEmpty(presynmsgs) && presynmsgs.length < 40){
+      if(should_msg || /([^\s]+)\s(?:is|are|likes?)(?! not)(?: the)?(?: same)?(?: as)?(?: like)?\s*(?:a)?\s*([^\s]+)$/.exec(msg) || /([^\s]+)\s(?:(?:(?:is|are)(?: not))|(?:doesn't\slike)|(?:aren't|isn't))(?: the)?(?: same)?(?: as)?(?: like)?\s*(?:a)?\s*([^\s]+)$/.exec(msg)){
         var _this = this
         var cache = {}
         var promises = _l.flatten(_l.map(presynmsgs, function(g){ return [_this.findwordfrombrain(g, cache), _this.findword(g,cache)]}))
