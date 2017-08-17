@@ -62,7 +62,6 @@
     "irc-formatting": "^1.0.0-rc3",
     "jsmegahal": "git+https://github.com/seiyria/jsmegahal.git",
     "lodash": "^4.17.4",
-    "mongodb": "^2.2.31",
     "natural": "^0.5.1",
     "node-snowball": "^0.2.0",
     "pry": ">1.0.0",
