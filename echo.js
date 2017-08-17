@@ -86,22 +86,31 @@ function queryTwitter(s){
       })
 }
 
+bot.on('messageReactionAdd', (messageReaction, user) => {
+  if( messageReaction.message.channel.id == '345940851412828161' && user.username == 'mlue' && messageReaction.emoji.name == "👍" ){
+    client.post('statuses/update', {status: messageReaction.message.cleanContent},  function(error, tweet, response) {
+      if(error)console.log(error);
+      if(response)console.log(response);  // Raw response object.
+    });
+  }
+});
+
 
 bot.on('message', function(message) {
-  if(message.content.match(/.{5,}\..+/))megahal.addMass(message.content)
-  else megahal.add(message.content)
+  if(message.cleanContent.match(/.{5,}\..+/))megahal.addMass(message.cleanContent)
+  else megahal.add(message.cleanContent)
   var delay = Math.random()* 50000
   if(message.author.id != bot.user.id && message.channel.id == '345940851412828161' && message.author.username == 'gbp'){
     var convDelay = Math.random() * 120000+60000
     setTimeout(() => {
       console.log('sending in '+convDelay/60000+' minutes')
-      message.channel.send(megahal.getReplyFromSentence(message.content))
+      message.channel.send(megahal.getReplyFromSentence(message.cleanContent))
     }, convDelay)
-    if(message.content.length > 800){message.channel.startTyping()
-    var topics = _l(nlp(message.content).nouns().out('array')).countBy().toPairs().sortBy(e => -e[1]).value();
+    if(message.cleanContent.length > 800){message.channel.startTyping()
+    var topics = _l(nlp(message.cleanContent).nouns().out('array')).countBy().toPairs().sortBy(e => -e[1]).value();
     var pro = topics[0][0]
     var sup = topics[1] ? topics[1][0] : 'everyone else'
-    if(message.content.length > 800)setTimeout(() => {
+    if(message.cleanContent.length > 800)setTimeout(() => {
       // message.reply(reactions[Math.floor(Math.random() * reactions.length)]).catch((e) => console.log(e))
       message.react(reactions[Math.floor(Math.random() * reactions.length)]).catch((e) => console.log(e))
       var critiques = [`I'm not sure about ${pro}`, `${pro} was definitely unfair to ${sup}`, `Should ${pro} end up happy? What about ${sup}?`, `Should ${pro} end up happy? ${sup} was a shit`, `I don't understand ${pro}`, `${pro} didn't deserve that`, `This story makes no sense to me`, `Is this nonsense?`, `I guess the takeaway is that, in life people like ${pro} take advantage of people like ${sup}`, `What does what happened to ${pro} say about anything?`, `What could ${pro} represent in relation to ${sup}`]

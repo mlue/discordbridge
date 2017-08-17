@@ -346,7 +346,7 @@ class Bot {
     // "{$keyName}" => "variableValue"
     // nickname: discord nickname
     // displayUsername: nickname with wrapped colors
-    // text: the (IRC-formatted) message content
+    // text: the (IRC-formatted) message.cleanContent
     // discordChannel: Discord channel (e.g. #general)
     // ircChannel: IRC channel (e.g. #irc)
     // attachmentURL: the URL of the attachment (only applicable in formatURLAttachment)
@@ -356,7 +356,7 @@ class Bot {
 
     // "{$keyName}" => "variableValue"
     // author: IRC nickname
-    // text: the (Discord-formatted) message content
+    // text: the (Discord-formatted) message.cleanContent
     // withMentions: text with appropriate mentions reformatted
     // discordChannel: Discord channel (e.g. #general)
     // ircChannel: IRC channel (e.g. #irc)
@@ -428,7 +428,7 @@ class Bot {
       this.throttle -= (0.25 + ((new Date().getTime()/1000 - this.last_msg_time) * 1/72));
       this.last_msg_time = new Date().getTime()/1000;
       var msg = this.parseText(message);
-      var should_msg = roll > ( /(?:begin analysis|@gbp)/.exec(msg) ? 10 : this.throttle )
+      var should_msg = roll > ( /(?:begin analysis|@gbp)/.exec(msg) || message.isMentioned(this.discord.user.id) ? 5 : this.throttle )
       _winston2.default.verbose('******************** rolled a '+roll+' vs '+( /begin analysis/.exec(msg) ? 10 : this.throttle ));
       msg = msg.replace(/^(?:@gbp:?\s*)?begin analysis/,' ')
       if(should_msg)_winston2.default.input("WRITING for "+msg+"\n\n\n\n");
@@ -481,12 +481,12 @@ class Bot {
     }
     var that = this;
     this.discord.on('message', message => {
-      if(message.content.match(/.{5,}\..+/))megahal.addMass(message.content)
-      else megahal.add(message.content)
+      if(message.cleanContent.match(/.{5,}\..+/))megahal.addMass(message.cleanContent)
+      else megahal.add(message.cleanContent)
       if(message.author.id != that.discord.user.id && message.channel.id == '345940851412828161' && message.author.username == 'echo' && Math.random() > 0.15)setTimeout(() => {
-          message.channel.send(megahal.getReplyFromSentence(message.content))
+          message.channel.send(megahal.getReplyFromSentence(message.cleanContent))
       }, (Math.random() * 120000)+60000)
-      if(message.content.match(/^gimme a script/) && message.author.username != 'gbp'){
+      if(message.cleanContent.match(/^gimme a script/) && message.author.username != 'gbp'){
         message.channel.startTyping()
         film.getPlot().then((content) => {
           message.channel.send(content.title+' '+content.body, {split: {maxLength: 1950, char: "\n"}})
