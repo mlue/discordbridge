@@ -128,7 +128,7 @@ bot.login(process.env.SECRET).then(() => {
   setTimeout(queryTwitter('overwatch'), 10000)
   setInterval(queryTwitter('overwatch'),1000*3600)
   askForScript();
-  emojis = bot.guilds.first().emojis})
+  emojis = bot.guilds.first().emojis}).catch( e => console.log(e))
 process.on('unhandledRejection', (reason, p) => {
   console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
   // application specific logging, throwing an error, or other logic here
