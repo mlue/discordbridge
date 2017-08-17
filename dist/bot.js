@@ -13,6 +13,11 @@ Object.defineProperty(exports, "__esModule", {
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 var _emojis = {};
+dbconn = null
+var mongoclient = require('mongodb').MongoClient;
+mongoclient.connect('mongodb://127.0.0.1:27017/jsmegahal', function(e, db) {
+  dbconn = db
+}
 
 var godotcon = new require('./godot')
 var godot = new godotcon.Godot()
@@ -428,7 +433,7 @@ class Bot {
       this.throttle -= (0.25 + ((new Date().getTime()/1000 - this.last_msg_time) * 1/72));
       this.last_msg_time = new Date().getTime()/1000;
       var msg = this.parseText(message);
-      var should_msg = roll > ( /(?:begin analysis|@gbp)/.exec(msg) ? 10 : this.throttle )
+      var should_msg = roll > ( /(?:begin analysis|@gbp)/.exec(msg) || message.isMentioned(this.discord.user.id) ? 10 : this.throttle )
       _winston2.default.verbose('******************** rolled a '+roll+' vs '+( /begin analysis/.exec(msg) ? 10 : this.throttle ));
       msg = msg.replace(/^(?:@gbp:?\s*)?begin analysis/,' ')
       if(should_msg)_winston2.default.input("WRITING for "+msg+"\n\n\n\n");
@@ -481,12 +486,20 @@ class Bot {
     }
     var that = this;
     this.discord.on('message', message => {
-      if(message.content.match(/.{5,}\..+/))megahal.addMass(message.content)
-      else megahal.add(message.content)
+      dbconn.eval('function(x) { add(x); }', [message.cleanContent], function() {});
+
+      if(message.author.id != that.discord.user.id && message.isMentioned(that.discord.user.id)){
+        message.channel.startTyping();
+        setTimeout(() => {
+          dbconn.eval('function(x){return reply(x)}', [message.cleanContent], function(err, reply) {if(err || _l.trim(reply) == '')console(err)
+                                                                                                    else message.channel.send(reply); });
+          message.channel.stopTyping();
+        }, (Math.random() * 5000))
+      }
       if(message.author.id != that.discord.user.id && message.channel.id == '345940851412828161' && message.author.username == 'echo' && Math.random() > 0.15)setTimeout(() => {
-          message.channel.send(megahal.getReplyFromSentence(message.content))
-      }, (Math.random() * 120000)+60000)
-      if(message.content.match(/^gimme a script/) && message.author.username != 'gbp'){
+          message.channel.send(megahal.getReplyFromSentence(message.cleanContent))
+      }, (Math.random() * 720000)+60000)
+      if(message.cleanContent.match(/^gimme a script/) && message.author.username != 'gbp'){
         message.channel.startTyping()
         film.getPlot().then((content) => {
           message.channel.send(content.title+' '+content.body, {split: {maxLength: 1950, char: "\n"}})
