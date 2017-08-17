@@ -492,12 +492,13 @@ class Bot {
         message.channel.startTyping();
         setTimeout(() => {
           dbconn.eval('function(x){return reply(x)}', [message.cleanContent], function(err, reply) {if(err || _l.trim(reply) == '')console(err)
-                                                                                                    else message.channel.send(reply); });
+                                                                                                    else message.reply(reply); });
           message.channel.stopTyping();
         }, (Math.random() * 5000))
       }
       if(message.author.id != that.discord.user.id && message.channel.id == '345940851412828161' && message.author.username == 'echo' && Math.random() > 0.15)setTimeout(() => {
-          message.channel.send(megahal.getReplyFromSentence(message.cleanContent))
+         dbconn.eval('function(x){return reply(x)}', [message.cleanContent], function(err, reply) {if(err || _l.trim(reply) == '')console(err)
+                                                                                                    else message.channel.send(reply); });
       }, (Math.random() * 720000)+60000)
       if(message.cleanContent.match(/^gimme a script/) && message.author.username != 'gbp'){
         message.channel.startTyping()

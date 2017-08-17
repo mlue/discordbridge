@@ -89,22 +89,28 @@ function queryTwitter(s){
 }
 
 bot.on('messageReactionAdd', (messageReaction, user) => {
-  if( messageReaction.message.channel.id == '345940851412828161' && user.username == 'mlue' && messageReaction.emoji.name == "👍" )console.log(messageReaction.emoji)
-  client.post('statuses/update', {status: messageReaction.message.cleanContent},  function(error, tweet, response) {
-    console.log("OK");  // Raw response object.
-  });
+  if( messageReaction.message.channel.id == '345940851412828161' && user.username == 'mlue' && messageReaction.emoji.name == "👍" ){
+    client.post('statuses/update', {status: messageReaction.message.cleanContent},  function(error, tweet, response) {
+      if(error)console.log(error);
+      if(response)console.log(response);  // Raw response object.
+    });
+  }
 });
 
+var getRandomWord = function (words) {
+    return words[Math.floor(Math.random() * words.length)];
+}
+
 bot.on('message', function(message) {
-  dbconn.eval('function(x) { add(x); }', [message.cleanContent], function() {});
+  dbconn.eval('function(x) { add(x); }', [message.cleanContent], {nolock: true}, function() {});
   var delay = Math.random()* 50000
   if(message.author.id != bot.user.id && message.channel.id == '345940851412828161' && message.author.username == 'gbp'){
     var convDelay = Math.random() * 960000+60000
     console.log('sending in '+convDelay/60000+' minutes')
-
     if(Math.random() > 0.25)setTimeout(() => {
-      dbconn.eval('function(x){return reply(x)}', [message.cleanContent], function(err, reply) {if(err || _l.trim(reply) == '')console(err)
-                                                                                         else message.channel.send(reply); });
+      dbconn.eval('function(x){return reply(x)}', [getRandomWord(message.cleanContent.split(' '))], {nolock: true}, function(err, reply) {if(err)console.log(err)
+                                                                                                else if(_l.trim(reply) == ''){}
+                                                                                                else message.channel.send(reply); });
     }, convDelay)
     if(message.cleanContent.length > 800){message.channel.startTyping()
     var topics = _l(nlp(message.cleanContent).nouns().out('array')).countBy().toPairs().sortBy(e => -e[1]).value();
