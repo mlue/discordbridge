@@ -31,6 +31,10 @@ bot.on('ready', function() {
 
 });
 
+var talkToGBPDebounce = _l.debounce((m) => {
+  m.channel.send(megahal.getReplyFromSentence(m.cleanContent))
+}, 120000)
+
 function askForScript() {
   bot.channels.find( c => c.id == '345940851412828161').send('gimme a script').catch()
 }
@@ -101,11 +105,7 @@ bot.on('message', function(message) {
   else megahal.add(message.cleanContent)
   var delay = Math.random()* 50000
   if(message.author.id != bot.user.id && message.channel.id == '345940851412828161' && message.author.username == 'gbp'){
-    var convDelay = Math.random() * 120000+60000
-    setTimeout(() => {
-      console.log('sending in '+convDelay/60000+' minutes')
-      message.channel.send(megahal.getReplyFromSentence(message.cleanContent))
-    }, convDelay)
+    talkToGBPDebounce(message)
     if(message.cleanContent.length > 800){message.channel.startTyping()
     var topics = _l(nlp(message.cleanContent).nouns().out('array')).countBy().toPairs().sortBy(e => -e[1]).value();
     var pro = topics[0][0]
@@ -125,8 +125,8 @@ bot.on('message', function(message) {
 bot.login(process.env.SECRET).then(() => {
   startStream({follow: '117394273,34418878,2420931980,2592325530,44918425', language: 'en', filter_level: 'low'});
   startStream({track: 'artificialintelligence, mvci, cryptocurrency, ethereum, openai, skynet, TWTonline', language: 'en', filter_level: 'low'});
-  setTimeout(queryTwitter('overwatch'), 10000)
-  setInterval(queryTwitter('overwatch'),1000*3600)
+  setTimeout(() => queryTwitter('overwatch'), 10000)
+  setInterval(() => queryTwitter('overwatch'),1000*3600)
   askForScript();
   emojis = bot.guilds.first().emojis}).catch( e => console.log(e))
 process.on('unhandledRejection', (reason, p) => {

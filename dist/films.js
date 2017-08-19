@@ -11,15 +11,17 @@ var c = require('cheerio')
 
 class Films {
   constructor(options){
-
+    this.urls = ['https://en.wikipedia.org/wiki/Special:RandomInCategory/Multiplayer_and_single-player_video_games',
+                'https://en.wikipedia.org/wiki/Special:RandomInCategory/English-language_films']
   }
 
 
 
   getPlot(){
     var found = q.defer()
+    var that = this;
     function findPlot(){
-      request('https://en.wikipedia.org/wiki/Special:RandomInCategory/English-language_films', function (error, response, body) {
+      request(that.urls[Math.floor(Math.random() * that.urls.length)], function (error, response, body) {
         if(error){console.log(error);setTimeout(timeoutRequest, 2000)}
         else{
           var parsedPage = c.load(body)
@@ -49,4 +51,4 @@ class Films {
   }
 }
 
-exports.film = Films
+module.exports = new Films()

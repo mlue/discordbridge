@@ -14,10 +14,8 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 
 var _emojis = {};
 
-var godotcon = new require('./godot')
-var godot = new godotcon.Godot()
-var filmcon = new require('./films')
-var film = new filmcon.film()
+var game = require('./games')
+var film = require('./films')
 
 var ekeys = require("emojis-keywords"),  evalues = require("emojis-list");
 
@@ -58,6 +56,7 @@ var _validators = require('./validators');
 var _formatting = require('./formatting');
 
 var _util = require('util');
+console.log(_util.inspect(film))
 
 var _sentiment = require('sentiment');
 
@@ -243,6 +242,15 @@ class Bot {
       return !isNaN(parseFloat(n)) && isFinite(n);
 
     }
+
+    this.letsPlayDebounce = _l.debounce((m) => game.getGame().then((content) => {
+      m.channel.send("Let's play "+content.title+" instead")
+      m.channel.stopTyping();
+    }).catch(e => console.log(e)), 20000)
+
+    this.talkToEchoDebounce = _l.debounce((m) => {
+          m.channel.send(megahal.getReplyFromSentence(m.cleanContent))
+      }, 120000)
 
     this.findword = function(g, cache){
       if(cache[g]){
@@ -483,15 +491,17 @@ class Bot {
     this.discord.on('message', message => {
       if(message.cleanContent.match(/.{5,}\..+/))megahal.addMass(message.cleanContent)
       else megahal.add(message.cleanContent)
-      if(message.author.id != that.discord.user.id && message.channel.id == '345940851412828161' && message.author.username == 'echo' && Math.random() > 0.15)setTimeout(() => {
-          message.channel.send(megahal.getReplyFromSentence(message.cleanContent))
-      }, (Math.random() * 120000)+60000)
+      if(message.author.id != that.discord.user.id && message.channel.id == '345940851412828161' && message.author.username == 'echo' && Math.random() > 0.15)this.talkToEchoDebounce(message)
       if(message.cleanContent.match(/^gimme a script/) && message.author.username != 'gbp'){
         message.channel.startTyping()
         film.getPlot().then((content) => {
           message.channel.send(content.title+' '+content.body, {split: {maxLength: 1950, char: "\n"}})
           message.channel.stopTyping();
         }).catch(e => console.log(e))
+      }
+      else if(message.cleanContent.match(/let's play/) && message.author.username != 'gbp'){
+        message.channel.startTyping()
+        this.letsPlayDebounce(message)
       }
       else l(message, 'o')
 
@@ -746,5 +756,9 @@ class Bot {
     discordChannel.sendMessage(text);
   }
 }
+process.on('unhandledRejection', (reason, p) => {
+  console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
+  // application specific logging, throwing an error, or other logic here
+});
 
 exports.default = Bot;
