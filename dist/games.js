@@ -20,7 +20,7 @@ class Games {
         else{
           var parsedPage = c.load(body)
           console.log("parsing "+parsedPage('title').text())
-          found.resolve({title: parsedPage('title').text().replace(/Wikipedia/,'')})}
+          found.resolve({title: parsedPage('title').text().replace(/\s+\(video game\)\s+/,'').replace(/- Wikipedia/,'')})}
       })
     }
     function timeoutRequest (){

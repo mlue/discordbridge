@@ -31,9 +31,9 @@ bot.on('ready', function() {
 
 });
 
-var talkToGBPDebounce = _l.debounce((m) => {
+var talkToGBPDebounce = _l.throttle((m) => {
   m.channel.send(megahal.getReplyFromSentence(m.cleanContent))
-}, 120000)
+}, 90000)
 
 function askForScript() {
   bot.channels.find( c => c.id == '345940851412828161').send('gimme a script').catch()

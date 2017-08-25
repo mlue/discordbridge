@@ -158,6 +158,7 @@ _emojis = _l.pickBy(_emojis, (v, k) => {
 })
 
 delete _emojis['one']
+delete _emojis['jack']
 
 var post_merge_size = Object.keys(_emojis).length
 
@@ -167,12 +168,12 @@ fs.readFile('/home/mlue/seed.txt','utf8', (err,data) => {
   megahal.addMass(data)
 })
 
-fs.writeFile("emojilist", `growth: ${pre_merge_size} to ${post_merge_size} `+_util.inspect(_emojis), function(err) {
+fs.writeFile("/home/mlue/emojilist", `growth: ${pre_merge_size} to ${post_merge_size} `+_util.inspect(_emojis), function(err) {
   if(err) {
-    return console.log(err);
+    _winston2.default.info(err)
 
   }
-  console.log("The file was saved!");
+  else console.log("The file was saved!");
 
 });
 
@@ -193,7 +194,7 @@ function saveFact(msg, emoji, s, user){
       var two = match[2]
       // o is fact s is sentiment - l for like vs positive association
       db_string += s == 'o' ? one+":"+user+":p" : user+":"+one+(/likes/.exec(msg) ? ":l" : ":p");
-      if(_l.trim(two) != ""){
+      if(_l.trim(two) !== ""){
         _winston2.default.info("INCREMENTING",db_string, "FOR", two)
         _client.hincrby(db_string, s == 'o' ? two : one, 1, redis.print)
       }
@@ -243,14 +244,18 @@ class Bot {
 
     }
 
-    this.letsPlayDebounce = _l.debounce((m) => game.getGame().then((content) => {
+    this.letsPlayDebounce = _l.throttle((m) => game.getGame().then((content) => {
       m.channel.send("Let's play "+content.title+" instead")
       m.channel.stopTyping();
     }).catch(e => console.log(e)), 20000)
 
-    this.talkToEchoDebounce = _l.debounce((m) => {
+    this.talkToAllDebounce = _l.debounce((m) => {
           m.channel.send(megahal.getReplyFromSentence(m.cleanContent))
-      }, 120000)
+    }, 10000, {leading: true, trailing: true})
+
+    this.talkToEchoDebounce = _l.throttle((m) => {
+          m.channel.send(megahal.getReplyFromSentence(m.cleanContent))
+      }, 30000)
 
     this.findword = function(g, cache){
       if(cache[g]){
@@ -436,8 +441,8 @@ class Bot {
       this.throttle -= (0.25 + ((new Date().getTime()/1000 - this.last_msg_time) * 1/72));
       this.last_msg_time = new Date().getTime()/1000;
       var msg = this.parseText(message);
-      var should_msg = roll > ( /(?:begin analysis|@gbp)/.exec(msg) || message.isMentioned(this.discord.user.id) ? 5 : this.throttle )
-      _winston2.default.verbose('******************** rolled a '+roll+' vs '+( /begin analysis/.exec(msg) ? 10 : this.throttle ));
+      var should_msg = roll > ( /(?:begin analysis|@gbp)/i.exec(msg) || message.isMentioned(this.discord.user.id) ? 5 : this.throttle )
+      _winston2.default.verbose('******************** rolled a '+roll+' vs '+( /begin analysis/.exec(msg) ? 5 : this.throttle ));
       msg = msg.replace(/^(?:@gbp:?\s*)?begin analysis/,' ')
       if(should_msg)_winston2.default.input("WRITING for "+msg+"\n\n\n\n");
       // var presynmsgs = _l.reject(_l.split(msg.replace(/(dicks?|pussy|penis|assholes?|butts?)/,
@@ -456,6 +461,7 @@ class Bot {
         saveFact(msg, negative_response,'t', message.author.username)
       }
       _winston2.default.info('******************** SYM MESSAGE ANALYSIS ',presynmsgs.length, _util.inspect(presynmsgs))
+      if(presynmsgs.length > 50)presynmsgs = _l.slice(presynmsgs,0,50)
       if(should_msg || /([^\s]+)\s(?:is|are|likes?)(?! not)(?: the)?(?: same)?(?: as)?(?: like)?\s*(?:a)?\s*([^\s]+)$/.exec(msg) || /([^\s]+)\s(?:(?:(?:is|are)(?: not))|(?:doesn't\slike)|(?:aren't|isn't))(?: the)?(?: same)?(?: as)?(?: like)?\s*(?:a)?\s*([^\s]+)$/.exec(msg)){
         var _this = this
         var cache = {}
@@ -491,7 +497,8 @@ class Bot {
     this.discord.on('message', message => {
       if(message.cleanContent.match(/.{5,}\..+/))megahal.addMass(message.cleanContent)
       else megahal.add(message.cleanContent)
-      if(message.author.id != that.discord.user.id && message.channel.id == '345940851412828161' && message.author.username == 'echo' && Math.random() > 0.15)this.talkToEchoDebounce(message)
+      if(message.author.id != that.discord.user.id && message.isMentioned(this.discord.user.id) && message.author.username != 'echo')this.talkToAllDebounce(message)
+      if(message.channel.id == '345940851412828161' && message.author.username == 'echo')this.talkToEchoDebounce(message)
       if(message.cleanContent.match(/^gimme a script/) && message.author.username != 'gbp'){
         message.channel.startTyping()
         film.getPlot().then((content) => {
@@ -499,7 +506,7 @@ class Bot {
           message.channel.stopTyping();
         }).catch(e => console.log(e))
       }
-      else if(message.cleanContent.match(/let's play/) && message.author.username != 'gbp'){
+      else if(message.cleanContent.match(/let's play/) && message.author.username != 'gbp' && Math.random() > 0.7){
         message.channel.startTyping()
         this.letsPlayDebounce(message)
       }
