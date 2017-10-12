@@ -157,8 +157,8 @@ _emojis = _l.pickBy(_emojis, (v, k) => {
   else return true
 })
 
-delete _emojis['one']
-delete _emojis['jack']
+delete _emojis.one
+delete _emojis.jack
 
 var post_merge_size = Object.keys(_emojis).length
 
@@ -255,7 +255,11 @@ class Bot {
 
     this.talkToEchoDebounce = _l.throttle((m) => {
           m.channel.send(megahal.getReplyFromSentence(m.cleanContent))
-      }, 30000)
+    }, 30000)
+
+    this.wadu = _l.debounce((m) => {
+      m.channel.send(_l.sample(["wadu", "hnh", "wadu hek", "wadu hnh"]))
+    }, 7200000)
 
     this.findword = function(g, cache){
       if(cache[g]){
@@ -495,8 +499,10 @@ class Bot {
     }
     var that = this;
     this.discord.on('message', message => {
-      if(message.cleanContent.match(/.{5,}\..+/))megahal.addMass(message.cleanContent)
-      else megahal.add(message.cleanContent)
+      // if(message.cleanContent.match(/.{5,}\..+/))megahal.addMass(message.cleanContent)
+      // else megahal.add(message.cleanContent)
+      if(message.cleanContent.match(/^who.*robot/) && message.author.username != 'gbp')message.channel.send("me")
+      this.wadu(message)
       if(message.author.id != that.discord.user.id && message.isMentioned(this.discord.user.id) && message.author.username != 'echo')this.talkToAllDebounce(message)
       if(message.channel.id == '345940851412828161' && message.author.username == 'echo')this.talkToEchoDebounce(message)
       if(message.cleanContent.match(/^gimme a script/) && message.author.username != 'gbp'){
