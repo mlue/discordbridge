@@ -177,6 +177,11 @@ fs.writeFile("/home/mlue/emojilist", `growth: ${pre_merge_size} to ${post_merge_
 
 });
 
+function getRandomInt(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
+}
 
 function responder(m,a,obj){
   m.react(a);
@@ -258,8 +263,8 @@ class Bot {
     }, 30000)
 
     this.wadu = _l.debounce((m) => {
-      m.channel.send(_l.sample(["wadu", "hnh", "wadu hek", "wadu hnh"]))
-    }, 7200000)
+      m.channel.send(_l.sample(["wadu", "hnh", "wadu hek", "wadu hnh", "cells", "interlinked cells", "within cells interlinked", "cells interlinked within cells interlinked. within one stem", "cells interlinked within cells interlinked"] ))
+    }, 5400000)
 
     this.findword = function(g, cache){
       if(cache[g]){
