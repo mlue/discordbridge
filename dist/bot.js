@@ -183,6 +183,23 @@ function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
 }
 
+function wadu() {
+  return "w"+"a".repeat(getRandomInt(1,6))+"du"
+}
+
+function hek() {
+  return _l.sample(["hnh","hek"])
+}
+
+function waduhek(){
+  return (wadu() + " " + hek()+" ").repeat(getRandomInt(1,6))
+}
+
+function cells(){
+  within = "within cells interlinked "
+  return "cells " + within.repeat(getRandomInt(0, 6)) + "within a stem".repeat(getRandomInt(0,1))
+}
+
 function responder(m,a,obj){
   m.react(a);
   _winston2.default.info(`******* responding with ${a}`);
@@ -262,9 +279,14 @@ class Bot {
           m.channel.send(megahal.getReplyFromSentence(m.cleanContent))
     }, 30000)
 
-    this.wadu = _l.debounce((m) => {
-      m.channel.send(_l.sample(["wadu", "hnh", "wadu hek", "wadu hnh", "cells", "interlinked cells", "within cells interlinked", "cells interlinked within cells interlinked. within one stem", "cells interlinked within cells interlinked"] ))
-    }, 5400000)
+
+    this.idleWadu = _.debounce((m) => {
+      m.channel.send(_l.sample([waduhek(), cells()]))
+    }, 18000000)
+    
+    this.waduResponder = _l.throttle((m) => {
+      m.channel.send(_l.sample([waduhek(), cells()]))
+    }, 10000)
 
     this.findword = function(g, cache){
       if(cache[g]){
@@ -507,7 +529,8 @@ class Bot {
       // if(message.cleanContent.match(/.{5,}\..+/))megahal.addMass(message.cleanContent)
       // else megahal.add(message.cleanContent)
       if(message.cleanContent.match(/^who.*robot/) && message.author.username != 'gbp')message.channel.send("me")
-      this.wadu(message)
+      this.idleWadu(message)
+      if(message.cleanContent.match(/wadu/) && message.author.username != 'gbp')this.waduResponder(message)
       if(message.author.id != that.discord.user.id && message.isMentioned(this.discord.user.id) && message.author.username != 'echo')this.talkToAllDebounce(message)
       if(message.channel.id == '345940851412828161' && message.author.username == 'echo')this.talkToEchoDebounce(message)
       if(message.cleanContent.match(/^gimme a script/) && message.author.username != 'gbp'){
